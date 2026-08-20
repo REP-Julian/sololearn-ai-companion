@@ -17,54 +17,20 @@ Powered by a **Parallel Multi-AI Race & Majority-Vote Consensus Engine** via the
 ## 👨‍💻 Created By
 
 **Julian Agustino**
-<<<<<<< HEAD
 - GitHub: [@REP-Julian](https://github.com/REP-Julian)
 - Project Repository: [SoloLearn AI Companion](https://github.com/REP-Julian/sololearn-ai-companion)
-=======
->>>>>>> a31aeaaf2131f3335c796995bce75d8fb86027ca
 
 ---
 
-## 🚀 What's New in Release v2.0.0
-
-### 🏆 1. Parallel Multi-AI Race & Majority-Vote Consensus Engine
-- **Simultaneous Parallel Query**: Dispatches questions concurrently across multiple top free & active models (**Claude 3 Haiku**, **Gemini 2.0 Flash**, **DeepSeek R1**, **Llama 3.3 70B**).
-- **Consensus Cross-Validation**: When multiple models arrive at the identical syntax/solution, the system automatically crowns it as the **`🏆 Best Answer (Consensus)`** with 100% confidence.
-- **Sub-Second Latency**: Delivers verified answers in **300ms – 700ms** with zero rate-limit hang-ups.
-
-### ⚡ 2. SoloLearn React Fiber State & Ground-Truth Inspector
-- Reads React component state and Next.js data props (`__reactFiber$`, `__reactProps$`, `window.__NEXT_DATA__`).
-- Extracts 100% ground-truth answers directly from the client application with **0 API latency** and **0 token costs**.
-
-### 🧩 3. Code Rearrange & Drag-and-Drop Step Sequencing
-- Fully supports code reordering exercises (e.g. *"Rearrange the code to declare a method..."*).
-- Injects in-page glowing sequence badges (**`Step 1`**, **`Step 2`**, **`Step 3`**, **`Step 4`**, **`Step 5`**) directly onto draggable blocks.
-- Formats the assembled program as a clean, vertical step-by-step list in the HUD.
-
-### 🧠 4. 3-Pass Mental Compiler Verification Protocol
-- **Pass 1 (AST & Language Grammar)**: Analyzes target dialect (C# PascalCase rules, Python indentation/slices, JS strict equality, SQL clauses).
-- **Pass 2 (Mental Interpreter Trace)**: Dry-runs variable mutations, loop structures (`while`, `for`), condition checks, and operators (`+=`, `++x` vs `x++`, `%`).
-- **Pass 3 (Slot Boundary Isolation)**: Eliminates duplicate punctuation outside blanks (no duplicate semicolons, parentheses, or brackets).
-- **Pass 4 (Client-Side Structural Check)**: Validates tokens against choice lists and slot counts before page injection.
-
-### 🧹 5. Purged All Inaccessible Paid Models
-- **Removed**: Paid/credit-locked models that return `HTTP 402 Insufficient credits` errors (`Claude 3.5 Sonnet`, `Claude 3.7 Sonnet`, `DeepSeek V3 Paid`, `Gemini 1.5 Pro`).
-- **100% Free & Active Library**: Standardized on high-intelligence free tier models on OpenRouter + working Claude 3 Haiku.
-
-### 🎨 6. Viewport Containment & Scrollable Glassmorphic HUD
-- Strict `max-height: calc(100vh - 40px)` containment prevents the HUD from ever stretching off the bottom of the screen.
-- Smooth custom dark scrollbar for the settings drawer. Header and drag controls remain permanently accessible.
-
----
-
-## 🌟 Key Features Summary
+## 🌟 Key Features
 
 | Feature | Description |
 | :--- | :--- |
-| **🏆 Multi-AI Consensus Engine** | Runs multiple models in parallel; flags majority-agreed solutions as the verified Best Answer. |
-| **⚡ React Ground Truth Bypass** | Reads client-side React Fiber nodes for 100% ground truth with 0 API tokens. |
-| **🧩 Drag-and-Drop Sequencing** | Badges draggable code blocks (`Step 1`, `Step 2`, `Step 3`...) on the SoloLearn webpage. |
-| **🌐 Multi-Language Support** | Auto-detects active courses: **C# (.NET)**, **Python**, **JavaScript**, **Java**, **C++**, **SQL**, **HTML/CSS**. |
+| **🏆 Multi-AI Consensus Engine** | Runs multiple models in parallel; cross-validates and flags majority-agreed solutions as the verified Best Answer. |
+| **⚡ React Ground Truth Bypass** | Reads client-side React Fiber nodes for 100% ground truth with 0 API tokens and 0ms latency. |
+| **🧩 Drag-and-Drop Sequencing** | Automatically numbers draggable code blocks (`Step 1`, `Step 2`, `Step 3`...) on the SoloLearn webpage. |
+| **🧠 3-Pass Compiler Verification** | Executes AST analysis, mental dry-run traces, and slot boundary checks before generating answers. |
+| **🌐 Multi-Language Auto-Detection** | Detects active courses: **C# (.NET)**, **Python**, **JavaScript**, **Java**, **C++**, **SQL**, **HTML/CSS**. |
 | **🎯 In-Page Visual Highlighter** | Injects glowing emerald borders, answer badges, and slot placeholders into page elements. |
 | **💡 3-Pass Step-by-Step Proof** | Click `▶ 🔍 View 3-Pass Verification & Trace` to inspect mental compiler traces. |
 | **🛡️ 100% Heart-Safe & Anti-Bot** | Visual overlay mode ensures you stay in control of clicking and submitting. |
@@ -72,22 +38,58 @@ Powered by a **Parallel Multi-AI Race & Majority-Vote Consensus Engine** via the
 
 ---
 
-## ⚙️ Architecture & Solving Flow
+## ⚙️ Architecture & Solving Flow (Graphic Blueprint)
 
 ```mermaid
-graph TD
-    A[SoloLearn Exercise Detected] --> B[React Fiber State Inspector]
-    B -->|Ground Truth Found| C[Instant 100% Verified Answer (0ms)]
-    B -->|Not Found| D[Multi-AI Parallel Race Pool]
-    D --> E1[Claude 3 Haiku]
-    D --> E2[Gemini 2.0 Flash Free]
-    D --> E3[DeepSeek R1 Reasoning Free]
-    D --> E4[Llama 3.3 70B Free]
-    E1 & E2 & E3 & E4 --> F[3-Pass Mental Compiler Verification]
-    F --> G[Consensus & Majority Voting Matcher]
-    G --> H[🏆 Best Answer Selected]
-    H --> I[In-Page Highlighter & HUD Step Sequence Render]
-    C --> I
+flowchart TD
+    %% Theme & Styling Definitions
+    classDef clientStage fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#ffffff;
+    classDef raceStage fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#ffffff;
+    classDef compilerStage fill:#14532d,stroke:#22c55e,stroke-width:2px,color:#ffffff;
+    classDef consensusStage fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
+    classDef outputStage fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
+
+    subgraph S1["1️⃣ Client-Side Detection & Ground-Truth Bypass"]
+        A["🖥️ SoloLearn Active Exercise<br/>(Fill-Blanks / Choices / Reorder)"] --> B{"⚡ React Fiber & Next.js<br/>State Inspector"}
+        B -->|"Ground Truth Found"| GT["⚡ Instant Verified Ground Truth<br/>(0ms Latency • 0 API Tokens)"]
+    end
+
+    subgraph S2["2️⃣ Parallel Multi-AI Race Pool (OpenRouter)"]
+        B -->|"API Query Required"| RACE["🚀 Concurrent Multi-Model Query"]
+        RACE --> M1["🤖 Claude 3 Haiku<br/>(Fast & Verified)"]
+        RACE --> M2["🤖 Google Gemini 2.0 Flash<br/>(Ultra-Fast Multimodal)"]
+        RACE --> M3["🤖 DeepSeek R1 Reasoning<br/>(Deep Logic & Math)"]
+        RACE --> M4["🤖 Meta Llama 3.3 70B<br/>(Open-Weights SOTA)"]
+    end
+
+    subgraph S3["3️⃣ 3-Pass Mental Compiler Verification Engine"]
+        M1 --> P1["Pass 1: AST & Dialect Grammar<br/>(C# PascalCase, Python Slicing, JS Equality)"]
+        M2 --> P1
+        M3 --> P1
+        M4 --> P1
+        P1 --> P2["Pass 2: Mental Interpreter Trace<br/>(Variables, Loops, Operators '+=', '++x', '%')"]
+        P2 --> P3["Pass 3: Slot Boundary Isolation<br/>(Strip Duplicate Semicolons / Parentheses)"]
+    end
+
+    subgraph S4["4️⃣ Consensus Voting & Majority Cross-Validation"]
+        P3 --> CONSENSUS{"🤝 Multi-Model Agreement<br/>Signature Matcher"}
+        CONSENSUS -->|"2+ Models Match"| C_WIN["🏆 Best Answer (Consensus Winner)"]
+        CONSENSUS -->|"Fast Single Model"| F_WIN["🎯 Fast First-Place Winner"]
+    end
+
+    subgraph S5["5️⃣ In-Page Injection & HUD Display"]
+        GT --> DISP["🎨 Client Injector & Visual Guide"]
+        C_WIN --> DISP
+        F_WIN --> DISP
+        DISP --> OUT1["🎯 In-Page Glowing Badges & 'Step 1..5' Drag Order"]
+        DISP --> OUT2["📱 Glassmorphic HUD with Formatted Code & '💡 Why' Trace"]
+    end
+
+    class A,B,GT clientStage;
+    class RACE,M1,M2,M3,M4 raceStage;
+    class P1,P2,P3 compilerStage;
+    class CONSENSUS,C_WIN,F_WIN consensusStage;
+    class DISP,OUT1,OUT2 outputStage;
 ```
 
 ---
