@@ -1,0 +1,25 @@
+{
+  "name": "sololearn-ai-solver",
+  "version": "1.0.0",
+  "description": "Flawless AI-powered automation solver for SoloLearn activities using OpenRouter models (Claude 3.5 Sonnet, GPT-4o, DeepSeek, Gemini).",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node test/test_mock_cases.js",
+    "build:userscript": "node scripts/build_userscript.js"
+  },
+  "keywords": [
+    "sololearn",
+    "ai-solver",
+    "openrouter",
+    "claude",
+    "gpt-4o",
+    "automation",
+    "userscript",
+    "chrome-extension"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

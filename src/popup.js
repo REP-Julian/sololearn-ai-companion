@@ -1,0 +1,76 @@
+/**
+ * SoloLearn AI Solver - Extension Popup Logic
+ */
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const Config = window.SoloLearnConfig;
+  const apiKeyInput = document.getElementById('apiKey');
+  const modelSelect = document.getElementById('modelSelect');
+  const customModelGroup = document.getElementById('customModelGroup');
+  const customModelInput = document.getElementById('customModel');
+  const saveBtn = document.getElementById('saveBtn');
+  const testBtn = document.getElementById('testBtn');
+  const statusMsg = document.getElementById('statusMsg');
+
+  // Load existing settings
+  const settings = await Config.Storage.get();
+  apiKeyInput.value = settings.apiKey || '';
+  modelSelect.value = settings.selectedModel || 'anthropic/claude-3.5-sonnet';
+  customModelInput.value = settings.customModel || '';
+
+  if (settings.selectedModel === 'custom') {
+    customModelGroup.style.display = 'block';
+  }
+
+  modelSelect.addEventListener('change', () => {
+    if (modelSelect.value === 'custom') {
+      customModelGroup.style.display = 'block';
+    } else {
+      customModelGroup.style.display = 'none';
+    }
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    settings.apiKey = apiKeyInput.value.trim();
+    settings.selectedModel = modelSelect.value;
+    settings.customModel = customModelInput.value.trim();
+
+    await Config.Storage.save(settings);
+    showStatus('Settings saved successfully!', 'success');
+  });
+
+  testBtn.addEventListener('click', async () => {
+    const key = apiKeyInput.value.trim();
+    if (!key) {
+      showStatus('Please enter an API key first.', 'error');
+      return;
+    }
+
+    showStatus('Testing connection...', '');
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
+        headers: { Authorization: `Bearer ${key}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const label = data.data && data.data.label ? ` (${data.data.label})` : '';
+        showStatus(`Connected to OpenRouter!${label}`, 'success');
+      } else {
+        showStatus(`Invalid Key: HTTP ${res.status}`, 'error');
+      }
+    } catch (e) {
+      showStatus(`Connection error: ${e.message}`, 'error');
+    }
+  });
+
+  function showStatus(text, type) {
+    statusMsg.innerText = text;
+    statusMsg.className = `status-msg ${type}`;
+    setTimeout(() => {
+      if (statusMsg.innerText === text) {
+        statusMsg.innerText = '';
+      }
+    }, 4000);
+  }
+});

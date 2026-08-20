@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoloLearn AI Solver</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .logo {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #0ea5e9, #a855f7);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 0 12px rgba(14, 165, 233, 0.5);
+    }
+    .title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: #38bdf8;
+    }
+    select option {
+      background: #0f172a;
+    }
+    .btn {
+      width: 100%;
+      padding: 9px;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+    .btn-test {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      margin-top: 6px;
+    }
+    .btn-test:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .status-msg {
+      font-size: 11px;
+      margin-top: 8px;
+      text-align: center;
+      min-height: 16px;
+    }
+    .status-msg.success { color: #10b981; }
+    .status-msg.error { color: #ef4444; }
+    .footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">⚡</div>
+    <div>
+      <div class="title">SoloLearn AI Solver</div>
+      <div class="subtitle">OpenRouter Powered</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="apiKey">OpenRouter API Key</label>
+    <input type="password" id="apiKey" placeholder="sk-or-v1-..." />
+  </div>
+
+  <div class="form-group">
+    <label for="modelSelect">Preferred AI Model</label>
+    <select id="modelSelect">
+      <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Best Accuracy)</option>
+      <option value="openai/gpt-4o">GPT-4o (Fast & Intelligent)</option>
+      <option value="deepseek/deepseek-chat">DeepSeek V3 (Affordable)</option>
+      <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Fastest)</option>
+      <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+      <option value="custom">Custom Model Name...</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="customModelGroup" style="display: none;">
+    <label for="customModel">Custom Model ID</label>
+    <input type="text" id="customModel" placeholder="e.g. anthropic/claude-3-haiku" />
+  </div>
+
+  <button class="btn" id="saveBtn">Save Settings</button>
+  <button class="btn btn-test" id="testBtn">Test OpenRouter Connection</button>
+
+  <div class="status-msg" id="statusMsg"></div>
+
+  <div class="footer">
+    <span>Hotkey: <span class="badge">Alt + S</span></span>
+    <span>Auto-Injected on SoloLearn</span>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

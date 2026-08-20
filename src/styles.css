@@ -1,0 +1,341 @@
+/* ==========================================================================
+   SoloLearn AI Companion - Glassmorphic HUD & Visual Answer Styles
+   ========================================================================== */
+
+#sololearn-ai-hud {
+  position: fixed !important;
+  top: 24px !important;
+  right: 24px !important;
+  width: 400px !important;
+  max-width: calc(100vw - 32px) !important;
+  z-index: 2147483647 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: #ffffff !important;
+  background: rgba(15, 23, 42, 0.96) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid #334155 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(56, 189, 248, 0.25) !important;
+  box-sizing: border-box !important;
+  user-select: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+#sololearn-ai-hud *,
+#sololearn-ai-hud *::before,
+#sololearn-ai-hud *::after {
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+}
+
+/* Header */
+.sl-hud-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 18px !important;
+  background: #1e293b !important;
+  border-bottom: 1px solid #334155 !important;
+  cursor: grab !important;
+}
+
+.sl-hud-header:active {
+  cursor: grabbing !important;
+}
+
+.sl-hud-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.sl-brand-icon {
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, #0284c7, #8b5cf6) !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.6) !important;
+}
+
+.sl-hud-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.sl-icon-btn {
+  background: #334155 !important;
+  border: 1px solid #475569 !important;
+  color: #e2e8f0 !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+}
+
+.sl-icon-btn:hover {
+  background: #475569 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+}
+
+/* Status Bar */
+.sl-status-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 18px !important;
+  background: #141f36 !important;
+  border-bottom: 1px solid #1e293b !important;
+  font-size: 12px !important;
+}
+
+.sl-status-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+}
+
+.sl-status-dot {
+  width: 9px !important;
+  height: 9px !important;
+  border-radius: 50% !important;
+  display: inline-block !important;
+}
+
+.sl-status-dot.idle { background: #94a3b8 !important; }
+.sl-status-dot.thinking { background: #f59e0b !important; box-shadow: 0 0 10px #f59e0b !important; }
+.sl-status-dot.success { background: #10b981 !important; box-shadow: 0 0 10px #10b981 !important; }
+.sl-status-dot.error { background: #ef4444 !important; box-shadow: 0 0 10px #ef4444 !important; }
+.sl-status-dot.active { background: #38bdf8 !important; box-shadow: 0 0 10px #38bdf8 !important; }
+
+.sl-model-badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  background: #0369a1 !important;
+  color: #ffffff !important;
+  border: 1px solid #38bdf8 !important;
+  border-radius: 14px !important;
+  max-width: 170px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Body */
+.sl-hud-body {
+  padding: 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  background: #0f172a !important;
+}
+
+/* Big Companion Answer Display Card */
+.sl-companion-answer-card {
+  padding: 14px 16px !important;
+  background: linear-gradient(135deg, #064e3b 0%, #022c22 100%) !important;
+  border: 2px solid #10b981 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35) !important;
+  display: flex;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.sl-companion-answer-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: #34d399 !important;
+}
+
+.sl-companion-answer-content {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(52, 211, 153, 0.4) !important;
+  line-height: 1.4 !important;
+  word-break: break-word !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+.sl-companion-explanation {
+  font-size: 12px !important;
+  color: #d1fae5 !important;
+  line-height: 1.5 !important;
+  border-top: 1px dashed rgba(16, 185, 129, 0.4) !important;
+  padding-top: 8px !important;
+}
+
+/* Primary Reveal Answer Button */
+.sl-btn-primary {
+  width: 100% !important;
+  padding: 13px 18px !important;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #38bdf8 !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45) !important;
+}
+
+.sl-btn-primary:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%) !important;
+}
+
+.sl-hotkey-hint {
+  font-size: 11px !important;
+  padding: 2px 6px !important;
+  background: #0c4a6e !important;
+  border: 1px solid #38bdf8 !important;
+  border-radius: 4px !important;
+  color: #ffffff !important;
+  margin-left: auto !important;
+  font-weight: 700 !important;
+}
+
+/* Auto-Scan Toggle */
+.sl-toggle-btn {
+  padding: 10px 14px !important;
+  background: #1e293b !important;
+  border: 1px solid #475569 !important;
+  border-radius: 10px !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+}
+
+.sl-toggle-btn.active {
+  background: #064e3b !important;
+  border-color: #10b981 !important;
+  color: #34d399 !important;
+}
+
+/* Settings Drawer */
+.sl-settings-drawer {
+  display: none !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid #334155 !important;
+}
+
+.sl-settings-drawer.open {
+  display: flex !important;
+}
+
+.sl-field-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.sl-field-label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: #94a3b8 !important;
+}
+
+.sl-input, .sl-select {
+  width: 100% !important;
+  padding: 9px 12px !important;
+  background: #020617 !important;
+  border: 1px solid #475569 !important;
+  border-radius: 8px !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  outline: none !important;
+}
+
+.sl-input:focus, .sl-select:focus {
+  border-color: #38bdf8 !important;
+}
+
+.sl-btn-secondary {
+  padding: 9px 14px !important;
+  background: #0369a1 !important;
+  border: 1px solid #38bdf8 !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.sl-btn-secondary:hover {
+  background: #0284c7 !important;
+}
+
+/* In-Page Visual Highlighter Badges & Glowing Outline */
+.sl-ai-highlighted-choice {
+  position: relative !important;
+  border: 2.5px solid #10b981 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.55) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.sl-ai-badge {
+  position: absolute !important;
+  top: -12px !important;
+  right: 12px !important;
+  background: #10b981 !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 2px 8px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  letter-spacing: 0.4px !important;
+  z-index: 1000 !important;
+}
+
+#sololearn-ai-hud.minimized .sl-hud-body,
+#sololearn-ai-hud.minimized .sl-status-bar {
+  display: none !important;
+}
+
+#sololearn-ai-hud.minimized {
+  width: auto !important;
+}
