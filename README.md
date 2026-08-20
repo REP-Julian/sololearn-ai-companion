@@ -17,8 +17,11 @@ Powered by a **Parallel Multi-AI Race & Majority-Vote Consensus Engine** via the
 ## 👨‍💻 Created By
 
 **Julian Agustino**
+<<<<<<< HEAD
 - GitHub: [@REP-Julian](https://github.com/REP-Julian)
 - Project Repository: [SoloLearn AI Companion](https://github.com/REP-Julian/sololearn-ai-companion)
+=======
+>>>>>>> a31aeaaf2131f3335c796995bce75d8fb86027ca
 
 ---
 
