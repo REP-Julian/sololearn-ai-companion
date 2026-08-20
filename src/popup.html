@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SoloLearn AI Solver</title>
+  <title>SoloLearn AI Companion</title>
   <style>
     * {
       box-sizing: border-box;
@@ -128,8 +128,8 @@
   <div class="header">
     <div class="logo">⚡</div>
     <div>
-      <div class="title">SoloLearn AI Solver</div>
-      <div class="subtitle">OpenRouter Powered</div>
+      <div class="title">SoloLearn AI Companion</div>
+      <div class="subtitle">3-Pass Verification & State Inspector</div>
     </div>
   </div>
 
@@ -141,18 +141,13 @@
   <div class="form-group">
     <label for="modelSelect">Preferred AI Model</label>
     <select id="modelSelect">
-      <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Best Accuracy)</option>
-      <option value="openai/gpt-4o">GPT-4o (Fast & Intelligent)</option>
-      <option value="deepseek/deepseek-chat">DeepSeek V3 (Affordable)</option>
-      <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Fastest)</option>
-      <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
-      <option value="custom">Custom Model Name...</option>
+      <!-- Dynamically populated from config -->
     </select>
   </div>
 
   <div class="form-group" id="customModelGroup" style="display: none;">
     <label for="customModel">Custom Model ID</label>
-    <input type="text" id="customModel" placeholder="e.g. anthropic/claude-3-haiku" />
+    <input type="text" id="customModel" placeholder="e.g. anthropic/claude-3.7-sonnet" />
   </div>
 
   <button class="btn" id="saveBtn">Save Settings</button>

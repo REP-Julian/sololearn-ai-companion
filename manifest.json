@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "SoloLearn AI Automation Solver",
-  "version": "1.0.0",
-  "description": "Flawless AI-powered automation solver for SoloLearn activities using OpenRouter models (Claude 3.5 Sonnet, GPT-4o, DeepSeek, etc.).",
+  "version": "2.0.0",
+  "description": "Multi-AI consensus & 3-pass compiler solver for SoloLearn activities using OpenRouter free & active models.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

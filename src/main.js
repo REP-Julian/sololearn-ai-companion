@@ -1,6 +1,6 @@
 /**
  * SoloLearn AI Companion - Main Orchestrator
- * Seamlessly scans page, queries OpenRouter, highlights answer on webpage, and reveals step-by-step guidance.
+ * Seamlessly scans page, inspects React state, queries AI with 3-pass verification, highlights answer on webpage, and reveals step-by-step guidance.
  */
 
 (function () {
@@ -59,19 +59,11 @@
       }
 
       const settings = this.ui.settings;
-      if (!settings.apiKey) {
-        this.ui.setStatus('API Key Required', 'error');
-        this.ui.log('Please enter your OpenRouter API key in settings (⚙).', 'error');
-        this.ui.playChime('error');
-        return;
-      }
-
-      this.client.setApiKey(settings.apiKey);
       const activeModel = settings.selectedModel === 'custom' ? settings.customModel : settings.selectedModel;
       this.client.setModel(activeModel);
 
-      // 1. Scan Question on Page
-      this.ui.setStatus('Scanning Page...', 'thinking');
+      // 1. Scan Question & Check React Fiber State
+      this.ui.setStatus('Scanning React State & DOM...', 'thinking');
       const question = Parser.parseQuestion();
 
       if (!question) {
@@ -84,18 +76,40 @@
         question.language = settings.languageOverride;
       }
 
+      // Check if we need API key (only if internal ground truth was not found)
+      if (!question.isInternalGroundTruth && !settings.apiKey) {
+        this.ui.setStatus('API Key Required', 'error');
+        this.ui.log('Please enter your OpenRouter API key in settings (⚙) or HUD.', 'error');
+        this.ui.playChime('error');
+        return;
+      }
+
+      if (settings.apiKey) {
+        this.client.setApiKey(settings.apiKey);
+      }
+
       this.isBusy = true;
-      this.ui.setStatus(`Thinking (${this.ui.getShortModelName(activeModel)})...`, 'thinking');
+      const modelLabel = question.isInternalGroundTruth ? 'SoloLearn Internals' : this.ui.getShortModelName(activeModel);
+      this.ui.updateModelBadge(question.isInternalGroundTruth ? 'SoloLearn Internals' : activeModel);
+      this.ui.setStatus(`Analyzing (${modelLabel})...`, 'thinking');
       this.ui.showLoadingAnswer(activeModel);
       this.ui.log(`Analyzing: "${(question.title || 'Exercise').slice(0, 50)}..."`, 'normal');
 
       try {
-        // 2. Query AI Model
-        const response = await this.client.solve(question, activeModel);
+        // 2. Solve (Via Ground Truth, Multi-AI Race, or 3-Pass Verification)
+        const isRacing = !question.isInternalGroundTruth && settings.raceMode !== false;
+        if (isRacing) {
+          this.ui.setStatus('🏁 Racing top AI models...', 'thinking');
+        }
+
+        const response = await this.client.solve(question, activeModel, {
+          raceMode: settings.raceMode !== false,
+          enableFallback: settings.enableFallback !== false
+        });
 
         if (!response.success) {
           this.ui.setStatus('AI Error', 'error');
-          this.ui.log(`AI Error: ${response.error}`, 'error');
+          this.ui.log(`AI Error (${modelLabel}): ${response.error}`, 'error');
           this.ui.displayAnswer('Error analyzing exercise', response.error);
           this.ui.playChime('error');
           this.isBusy = false;
@@ -103,25 +117,46 @@
         }
 
         const aiData = response.data;
-        const answerText = Array.isArray(aiData.answers) ? aiData.answers.join(', ') : (aiData.answer || 'Answer Ready');
+        const isReorder = aiData.type === 'reorder' || question.type === 'reorder';
+        const answerText = isReorder && Array.isArray(aiData.answers)
+          ? aiData.answers.map((a, idx) => `${idx + 1}. ${a}`).join('\n')
+          : (Array.isArray(aiData.answers) ? aiData.answers.join(', ') : (aiData.answer || 'Answer Ready'));
         const explanation = aiData.explanation || aiData.thought || 'Analysis complete.';
 
-        const contextProof = `LANGUAGE: ${question.language || 'C#'}\nQUESTION: ${question.title || ''}\n\nSCANNED CODE:\n${question.code || 'None'}\n\nAI DRY RUN:\n${aiData.thought || explanation}`;
+        const hasConsensus = Boolean(response.hasConsensus);
+        const agreedNames = (response.agreedModels && response.agreedModels.length > 0)
+          ? response.agreedModels.map(m => this.ui.getShortModelName(m)).join(' + ')
+          : '';
+
+        const winnerPrefix = isGroundTruth
+          ? '⚡ Ground Truth'
+          : (hasConsensus ? `🏆 Best Answer (${response.agreementRatio} AI Models Agree)` : (response.wasRaced ? '🏁 Fast Winner' : '🎯 Answer'));
+
+        const badgeTag = isGroundTruth
+          ? '⚡ Ground Truth'
+          : (hasConsensus ? `🏆 ${response.votes} AI Models Agree` : `${this.ui.getShortModelName(actualModel)} • ${response.latencyMs}ms`);
 
         // 3. Highlight the correct answer directly on the webpage!
         Executor.highlightAnswerOnPage(question, aiData);
 
-        // 4. Update the model badge to show the EXACT model that answered
-        if (response.model) {
-          const badge = document.getElementById('sl-active-model-badge');
-          if (badge) badge.innerText = this.ui.getShortModelName(response.model);
+        // 4. Update the model badge to show consensus or winner model
+        if (hasConsensus) {
+          this.ui.updateModelBadge(`🏆 ${response.votes} AI Agree`);
+        } else {
+          this.ui.updateModelBadge(actualModel);
         }
 
-        // 5. Display in Companion Card with full proof
-        this.ui.displayAnswer(answerText, explanation, contextProof);
+        // 5. Display in Companion Card with full proof and consensus info
+        this.ui.displayAnswer(answerText, explanation, contextProof, isGroundTruth, {
+          hasConsensus,
+          votes: response.votes,
+          agreementRatio: response.agreementRatio,
+          agreedNames
+        });
 
-        this.ui.setStatus('Answer Revealed!', 'success');
-        this.ui.log(`🎯 Answer: <span class="highlight">${answerText}</span> (${this.ui.getShortModelName(response.model || activeModel)})`, 'success');
+        this.ui.setStatus(hasConsensus ? '🏆 Best Consensus Answer Revealed!' : 'Answer Revealed!', 'success');
+        const logAns = isReorder && Array.isArray(aiData.answers) ? aiData.answers.join(' ➔ ') : answerText;
+        this.ui.log(`${winnerPrefix}: <span class="highlight">${logAns}</span> (${hasConsensus ? agreedNames : badgeTag})`, 'success');
         this.ui.playChime('success');
       } catch (err) {
         console.error('[SoloLearn AI Companion]', err);
@@ -132,7 +167,7 @@
         setTimeout(() => {
           this.isBusy = false;
           this.ui.setStatus('Ready', 'idle');
-        }, 1000);
+        }, 800);
       }
     }
 

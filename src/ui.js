@@ -114,7 +114,7 @@
           <!-- Answer & Explanation Card -->
           <div class="sl-companion-answer-card" id="sl-companion-card">
             <div class="sl-companion-answer-header">
-              <span>🎯 Best Recommended Answer:</span>
+              <span id="sl-companion-header-label">🎯 Verified Solution:</span>
               <button class="sl-icon-btn" id="sl-copy-answer-btn" title="Copy Answer to Clipboard" style="margin-left: auto; width: 24px; height: 24px; font-size: 11px;">📋</button>
             </div>
             <div class="sl-companion-answer-content" id="sl-companion-answer">
@@ -124,8 +124,8 @@
               💡 <b>Ready:</b> AI Companion is ready to analyze your active exercise.
             </div>
             <details class="sl-companion-details" id="sl-companion-details" style="font-size: 11px; color: #94a3b8; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 6px; cursor: pointer;">
-              <summary style="font-weight: 700; color: #38bdf8;">🔍 View Scanned Context & Proof</summary>
-              <pre id="sl-scanned-context-preview" style="margin-top: 6px; padding: 8px; background: rgba(0,0,0,0.5); border-radius: 6px; font-size: 10px; color: #e2e8f0; white-space: pre-wrap; font-family: monospace; max-height: 120px; overflow-y: auto;"></pre>
+              <summary style="font-weight: 700; color: #38bdf8;">🔍 View 3-Pass Verification & Trace</summary>
+              <pre id="sl-scanned-context-preview" style="margin-top: 6px; padding: 8px; background: rgba(0,0,0,0.5); border-radius: 6px; font-size: 10px; color: #e2e8f0; white-space: pre-wrap; font-family: monospace; max-height: 140px; overflow-y: auto;"></pre>
             </details>
           </div>
 
@@ -181,6 +181,13 @@
             </div>
 
             <div class="sl-field-group">
+              <button class="sl-toggle-btn ${this.settings.raceMode !== false ? 'active' : ''}" id="sl-toggle-racemode" title="Races top free & fast AI models simultaneously to deliver the fastest zero-error answer">
+                <span>🏁 Parallel Multi-AI Race</span>
+                <span id="sl-racemode-indicator">${this.settings.raceMode !== false ? 'ON' : 'OFF'}</span>
+              </button>
+            </div>
+
+            <div class="sl-field-group">
               <button class="sl-btn-secondary" id="sl-test-key-btn">🧪 Test Connection</button>
             </div>
           </div>
@@ -192,9 +199,25 @@
     }
 
     getShortModelName(modelId) {
-      if (!modelId) return 'Claude 3.5';
+      if (!modelId) return 'Claude 3 Haiku';
+      if (modelId.includes('claude-3-haiku')) return 'Claude 3 Haiku';
+      if (modelId.includes('gemini-2.0-flash-thinking')) return 'Gemini Thinking (Free)';
+      if (modelId.includes('gemini-2.0-flash')) return 'Gemini 2.0 Flash (Free)';
+      if (modelId.includes('deepseek-r1')) return 'DeepSeek R1 (Free)';
+      if (modelId.includes('deepseek-chat') || modelId.includes('deepseek')) return 'DeepSeek V3 (Free)';
+      if (modelId.includes('llama-3.3-70b')) return 'Llama 3.3 70B (Free)';
+      if (modelId.includes('mistral-small')) return 'Mistral Small (Free)';
+      if (modelId.includes('SoloLearn')) return 'SoloLearn Internals';
+
       const parts = modelId.split('/');
       return parts[parts.length - 1] || modelId;
+    }
+
+    updateModelBadge(modelId) {
+      const badge = document.getElementById('sl-active-model-badge');
+      if (badge) {
+        badge.innerText = this.getShortModelName(modelId);
+      }
     }
 
     showLoadingAnswer(modelName) {
@@ -204,16 +227,31 @@
 
       if (card && ansEl && expEl) {
         ansEl.innerText = 'Analyzing with ' + this.getShortModelName(modelName) + '...';
-        expEl.innerHTML = 'Computing mathematical operations and syntax rules...';
+        expEl.innerHTML = 'Executing 3-Pass Mental Compiler Verification...';
         card.style.display = 'flex';
       }
     }
 
-    displayAnswer(answerText, explanationText, contextInfo = '') {
+    displayAnswer(answerText, explanationText, contextInfo = '', isGroundTruth = false, consensusInfo = null) {
       const card = document.getElementById('sl-companion-card');
+      const headerLabel = document.getElementById('sl-companion-header-label');
       const ansEl = document.getElementById('sl-companion-answer');
       const expEl = document.getElementById('sl-companion-explanation');
       const ctxEl = document.getElementById('sl-scanned-context-preview');
+
+      if (headerLabel) {
+        if (isGroundTruth) {
+          headerLabel.innerText = '⚡ Ground Truth (SoloLearn State):';
+        } else if (consensusInfo && consensusInfo.hasConsensus) {
+          headerLabel.innerText = `🏆 BEST ANSWER (${consensusInfo.agreementRatio} AI Models Agree):`;
+        } else {
+          headerLabel.innerText = '🎯 3-Pass Verified Solution:';
+        }
+      }
+
+      if (card) {
+        card.classList.toggle('consensus', Boolean(consensusInfo && consensusInfo.hasConsensus));
+      }
 
       // Strip any accidental JSON or metadata from answerText
       let cleanAns = String(answerText || 'Answer Ready').trim();
@@ -231,7 +269,10 @@
 
       if (card && ansEl && expEl) {
         ansEl.innerText = cleanAns;
-        expEl.innerHTML = `💡 <b>Why:</b> ${cleanExp}`;
+        const consensusTag = (consensusInfo && consensusInfo.hasConsensus && consensusInfo.agreedNames)
+          ? `<div style="margin-bottom:6px; color:#fbbf24; font-weight:700;">🤝 Multi-AI Agreement: ${consensusInfo.agreedNames}</div>`
+          : '';
+        expEl.innerHTML = `${consensusTag}💡 <b>Why:</b> ${cleanExp}`;
         if (ctxEl && contextInfo) {
           ctxEl.innerText = contextInfo;
         }
@@ -341,6 +382,15 @@
         document.getElementById('sl-autosolve-indicator').innerText = this.settings.autoSolve ? 'ON' : 'OFF';
         this.saveSettings();
         if (this.callbacks.onToggleAutoSolve) this.callbacks.onToggleAutoSolve(this.settings.autoSolve);
+      });
+
+      const toggleRacemode = document.getElementById('sl-toggle-racemode');
+      toggleRacemode?.addEventListener('click', () => {
+        this.settings.raceMode = !this.settings.raceMode;
+        toggleRacemode.classList.toggle('active', this.settings.raceMode);
+        document.getElementById('sl-racemode-indicator').innerText = this.settings.raceMode ? 'ON' : 'OFF';
+        this.saveSettings();
+        this.log(this.settings.raceMode ? '🏁 Multi-AI Race Mode is ON: Fastest verified model wins!' : 'Multi-AI Race Mode is OFF: Single model mode.', 'normal');
       });
 
       settingsToggle?.addEventListener('click', () => {

@@ -1,5 +1,5 @@
 /**
- * SoloLearn AI Solver - Extension Popup Logic
+ * SoloLearn AI Companion - Extension Popup Logic
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -14,8 +14,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load existing settings
   const settings = await Config.Storage.get();
+
+  // Populate models
+  modelSelect.innerHTML = '';
+  Config.DEFAULT_MODELS.forEach((m) => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.innerText = m.name;
+    modelSelect.appendChild(opt);
+  });
+  const customOpt = document.createElement('option');
+  customOpt.value = 'custom';
+  customOpt.innerText = 'Custom Model Name...';
+  modelSelect.appendChild(customOpt);
+
   apiKeyInput.value = settings.apiKey || '';
-  modelSelect.value = settings.selectedModel || 'anthropic/claude-3.5-sonnet';
+  modelSelect.value = settings.selectedModel || 'anthropic/claude-3.7-sonnet';
   customModelInput.value = settings.customModel || '';
 
   if (settings.selectedModel === 'custom') {

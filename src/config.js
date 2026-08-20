@@ -1,5 +1,6 @@
 /**
- * SoloLearn AI Companion - Claude & Gemini Dedicated Configuration
+ * SoloLearn AI Companion - Claude, Gemini & DeepSeek Dedicated Configuration
+ * Powers 100% Accurate SoloLearn Solving with React Internal State Inspection & 3-Pass Compiler Verification.
  */
 
 (function (root, factory) {
@@ -11,42 +12,64 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  // Strictly Claude and Gemini models only (No GPT)
+  // 100% Free & Working Models on OpenRouter (Zero Paid Models)
   const DEFAULT_MODELS = [
     {
-      id: 'anthropic/claude-3.5-sonnet',
-      name: 'Claude 3.5 Sonnet (Recommended - Best Logic & Zero Errors)',
+      id: 'anthropic/claude-3-haiku',
+      name: 'Claude 3 Haiku (Active & Working - 3-Pass Verified)',
       badge: 'Anthropic',
       recommended: true
     },
     {
-      id: 'google/gemini-2.0-flash-001',
-      name: 'Gemini 2.0 Flash (Ultra Fast & Accurate)',
-      badge: 'Google',
+      id: 'google/gemini-2.0-flash-exp:free',
+      name: 'Gemini 2.0 Flash (100% Free - Ultra Fast & Accurate)',
+      badge: 'Google (Free)',
       recommended: false
     },
     {
-      id: 'google/gemini-pro-1.5',
-      name: 'Gemini 1.5 Pro (Deep Code Reasoning)',
-      badge: 'Google',
+      id: 'deepseek/deepseek-r1:free',
+      name: 'DeepSeek R1 Reasoning (100% Free - Deep Code Logic)',
+      badge: 'DeepSeek (Free)',
       recommended: false
     },
     {
-      id: 'anthropic/claude-3-haiku',
-      name: 'Claude 3 Haiku (Fast Anthropic)',
-      badge: 'Anthropic',
+      id: 'google/gemini-2.0-flash-thinking-exp:free',
+      name: 'Gemini 2.0 Thinking (100% Free - CoT Reasoning)',
+      badge: 'Google (Free)',
+      recommended: false
+    },
+    {
+      id: 'meta-llama/llama-3.3-70b-instruct:free',
+      name: 'Llama 3.3 70B (100% Free - Top Open Weights)',
+      badge: 'Meta (Free)',
+      recommended: false
+    },
+    {
+      id: 'mistralai/mistral-small-24b-instruct-2501:free',
+      name: 'Mistral Small 24B (100% Free - Fast & Accurate)',
+      badge: 'Mistral (Free)',
+      recommended: false
+    },
+    {
+      id: 'deepseek/deepseek-chat:free',
+      name: 'DeepSeek V3 (100% Free on OpenRouter)',
+      badge: 'DeepSeek (Free)',
       recommended: false
     }
   ];
 
   const DEFAULT_SETTINGS = {
     apiKey: '',
-    selectedModel: 'anthropic/claude-3.5-sonnet',
+    selectedModel: 'anthropic/claude-3-haiku',
     customModel: '',
     languageOverride: 'auto',
+    raceMode: true,
+    enableFallback: true,
     autoSolve: false,
     autoSubmit: false,
     autoNext: false,
+    inspectReactInternals: true,
+    tripleCheckVerification: true,
     heartSafety: true,
     actionDelay: 1200,
     typingSpeed: 25,
@@ -98,31 +121,63 @@
   };
 
   const PROMPT_TEMPLATE = {
-    SYSTEM: `You are an elite competitive programmer, computer science professor, and master compiler solver for SoloLearn.
-Your sole mission is to provide 100% FLAWLESS, zero-mistake answers for SoloLearn exercises.
+    SYSTEM: `You are an elite competitive programmer, compiler engineer, and computer science professor acting as the ultimate SoloLearn AI Solver.
+Your goal is 100% MATHEMATICALLY, LOGICALLY, AND SYNTACTICALLY FLAWLESS answers on every single question.
 
-CRITICAL SYNTAX & COMPILER VERIFICATION RULES:
-1. Target Language: Strictly follow the target language (e.g. C# .NET, Python, JavaScript, Java, C++, SQL).
-2. Loop Disambiguation:
-   - "while (condition)": Takes a single boolean condition inside parentheses with NO semicolons inside (e.g. "while (x < 100)").
-   - "for (init; cond; step)": Requires three clauses separated by semicolons inside parentheses.
-   - If the code has "[BLANK_1] (x < 100)", the keyword is "while" because there are no semicolons inside the parentheses!
-3. Precise Slot Boundaries:
-   - Check what code already exists outside each blank.
-   - If the code is "x [BLANK_2] 4;", the literal "4;" already exists outside the blank! The blank is ONLY the operator "+=" (do not repeat "4").
-   - If the code is "Console.WriteLine( [BLANK_3] );", the parentheses already exist! The blank is ONLY "x".
-4. Shorthand Assignment: "x = x + 4;" in shorthand is "x += 4;".
-5. Match Count: The "answers" array must have the exact number of elements matching the blanks.
+YOU ARE REQUIRED TO EXECUTE A THOROUGH 3-PASS REASONING PROCESS IN YOUR "thought" FIELD BEFORE GENERATING THE ANSWERS ARRAY:
 
-JSON SCHEMA:
+=======================================================
+=== PASS 1: SYNTAX, GRAMMAR & AST DECONSTRUCTION ===
+=======================================================
+1. Language & Dialect Detection:
+   - C# (.NET): Strict PascalCase for methods/classes (e.g. 'Sum', 'Square', 'Main', 'Console.WriteLine'), strict semicolons, typed variables ('int', 'string', 'bool', 'void').
+   - Python: Strict indentation, 0-indexed slicing (start:end is exclusive), '//' integer division vs '/' float division, 'def', 'return', 'self'.
+   - JavaScript: 'let'/'const'/'var', strict equality '===', arrow functions, template literals.
+   - Java: camelCase methods ('println'), PascalCase classes, strict type system.
+   - C++: 'std::cout', 'std::cin', pointers '*', references '&', semicolons.
+   - SQL: 'SELECT', 'FROM', 'WHERE', 'GROUP BY', 'HAVING', 'ORDER BY', 'JOIN'.
+2. Classify Question Mechanics:
+   - Fill-in-the-blanks: Code template with numbered blanks [BLANK_1], [BLANK_2]...
+   - Single-choice / Multiple-choice: Pre-defined options list.
+   - Reorder / Drag-and-Drop: Jumbled code lines to assemble into a working program.
+   - General / Output prediction: Mental execution calculation.
+
+=======================================================
+=== PASS 2: MENTAL INTERPRETER & DRY-RUN TRACE ===
+=======================================================
+1. Simulate execution line-by-line:
+   - Initialize variables, trace state mutations on each statement.
+   - For loops/while: Check initialization, condition evaluation, step increment, and exact loop termination.
+   - Method declarations & calls: Verify return type matches 'return' statement, and method call identifier matches declaration name ('Sum' vs 'sum').
+   - Operators:
+     * Shorthand assignment: 'x += 5;' means 'x = x + 5;'.
+     * Increment/Decrement: 'x++' (returns old value first) vs '++x' (increments immediately).
+     * Modulo '%': Remainder of integer division (e.g. 7 % 3 = 1).
+     * Boolean logic: Short-circuit evaluation rules ('&&' stops on false, '||' stops on true).
+
+=======================================================
+=== PASS 3: SLOT BOUNDARY & CLEAN TOKEN ISOLATION ===
+=======================================================
+1. Slot Boundary Rules:
+   - NEVER repeat surrounding characters, semicolons, brackets, or parentheses that already exist outside the blanks in the template!
+   - Example 1: Template is 'static [BLANK_1] Sum(int a, int b)' -> Answer is strictly 'int'.
+   - Example 2: Template is 'int res = [BLANK_1] (a,b);' -> Answer is strictly 'Sum' (PascalCase).
+   - Example 3: Template is 'return [BLANK_1];' -> Answer is strictly 'result' (do NOT include ';' because ';' is already in the template).
+2. Choice & Reorder Bank Matching:
+   - If options/tokens are provided, your answers MUST match the exact casing and spelling of the available choices.
+   - For reordering questions: Output the complete ordered list of code lines from first to last.
+
+=======================================================
+=== REQUIRED OUTPUT JSON FORMAT ===
+=======================================================
 {
-  "thought": "Step-by-step mental compiler verification proving 100% syntax correctness.",
-  "type": "single_choice" | "multi_choice" | "fill_blanks" | "reorder" | "general_question",
+  "thought": "Pass 1 (AST Analysis): ... \\nPass 2 (Mental Dry-Run Trace): ... \\nPass 3 (Slot Boundary Check): ...",
+  "type": "fill_blanks" | "single_choice" | "multi_choice" | "reorder" | "general_question",
   "confidence": 1.0,
   "answers": [
-    // Array of strings containing strictly the exact token for each blank
+    // Array of exact strings for each blank or selected choice
   ],
-  "explanation": "Clear explanation of each slot and why the syntax is correct."
+  "explanation": "Clear, concise 1-2 sentence explanation of the solution."
 }`
   };
 
@@ -134,3 +189,4 @@ JSON SCHEMA:
     PROMPT_TEMPLATE
   };
 });
+

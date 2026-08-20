@@ -9,11 +9,12 @@ const rootDir = path.join(__dirname, '..');
 const srcDir = path.join(rootDir, 'src');
 
 const header = `// ==UserScript==
-// @name         SoloLearn AI Solver (OpenRouter Automation)
-// @namespace    https://github.com/antigravity/sololearn-ai-solver
-// @version      1.0.0
-// @description  Flawless AI-powered automation solver for SoloLearn activities using OpenRouter models (Claude 3.5 Sonnet, GPT-4o, DeepSeek, Gemini).
-// @author       Antigravity
+// @name         SoloLearn AI Companion (Multi-AI Consensus & 3-Pass Solver)
+// @namespace    https://github.com/REP-Julian/sololearn-ai-companion
+// @version      2.0.0
+// @description  Multi-AI consensus & 3-pass compiler solver for SoloLearn interactive courses, quizzes, and code rearrange tasks.
+// @author       Julian Agustino (@REP-Julian)
+// @homepage     https://github.com/REP-Julian/sololearn-ai-companion
 // @match        https://*.sololearn.com/*
 // @match        https://sololearn.com/*
 // @grant        none

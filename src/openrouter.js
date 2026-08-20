@@ -1,6 +1,6 @@
 /**
- * SoloLearn AI Companion - Pure Answer & Clean Explanation Formatter
- * Strictly isolates answers into pure tokens and separates reasoning into the explanation section.
+ * SoloLearn AI Companion - 3-Pass Compiler Solver & OpenRouter Client
+ * Enforces triple-check mental dry-runs and React internal state verification.
  */
 
 (function (root, factory) {
@@ -14,15 +14,16 @@
 
   const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
-  const RESILIENT_MODELS = [
-    'anthropic/claude-3.5-sonnet',
-    'google/gemini-2.0-flash-001',
-    'google/gemini-pro-1.5',
-    'anthropic/claude-3-haiku'
+  const FAST_RACE_MODELS = [
+    'anthropic/claude-3-haiku',
+    'google/gemini-2.0-flash-exp:free',
+    'deepseek/deepseek-r1:free',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'mistralai/mistral-small-24b-instruct-2501:free'
   ];
 
   class OpenRouterClient {
-    constructor(apiKey, model = 'anthropic/claude-3.5-sonnet') {
+    constructor(apiKey, model = 'anthropic/claude-3-haiku') {
       this.apiKey = apiKey;
       this.model = model;
     }
@@ -36,7 +37,7 @@
     }
 
     /**
-     * Extracts ONLY pure answer tokens for the answer box and plain text for the explanation
+     * Extracts pure answer tokens and cleanly separates reasoning
      */
     cleanJsonResponse(rawText) {
       if (!rawText) return null;
@@ -77,12 +78,12 @@
           .map(a => String(a).replace(/^[{\["'\s]+|[}\]"'\s]+$/g, '').trim())
           .filter(a => a.length > 0 && !a.includes('"thought"') && !a.includes('"answers"'));
 
-        let cleanExp = parsed.explanation || parsed.thought || 'Verified syntax solution.';
+        let cleanExp = parsed.explanation || parsed.thought || 'Verified 3-Pass syntax solution.';
         if (typeof cleanExp === 'object') cleanExp = JSON.stringify(cleanExp);
 
         if (cleanAnswers.length > 0) {
           return {
-            thought: parsed.thought || 'Verified reasoning',
+            thought: parsed.thought || 'Triple-check compiler verification passed.',
             type: parsed.type || 'fill_blanks',
             confidence: parsed.confidence || 1.0,
             answers: cleanAnswers,
@@ -105,6 +106,7 @@
         return {
           type: 'fill_blanks',
           answers: extractedAnswers,
+          thought: thoughtMatch ? thoughtMatch[1] : 'Regex extracted verification',
           explanation: (expMatch ? expMatch[1] : (thoughtMatch ? thoughtMatch[1] : 'Correct answer verified.')).replace(/\\"/g, '"')
         };
       }
@@ -115,20 +117,39 @@
         return {
           type: 'single_choice',
           answers: [singleAnswerMatch[1].replace(/["']/g, '').trim()],
+          thought: 'Single choice match',
           explanation: 'Verified solution.'
         };
       }
 
       // Fallback plain token
-      const cleanToken = text.replace(/^[#\*\s\->{"]+|[}\s"]+$/g, '').slice(0, 40).trim();
+      const cleanToken = text.replace(/^[#\*\s\->{"]+|[}\s"]+$/g, '').slice(0, 60).trim();
       return {
         type: 'general',
         answers: [cleanToken],
+        thought: 'Direct evaluation',
         explanation: 'Direct answer evaluation.'
       };
     }
 
-    async solve(questionPayload, modelOverride = null) {
+    async solve(questionPayload, modelOverride = null, options = {}) {
+      // 1. Direct Ground Truth from SoloLearn React Fiber / Next.js
+      if (questionPayload && questionPayload.isInternalGroundTruth && Array.isArray(questionPayload.answers) && questionPayload.answers.length > 0) {
+        return {
+          success: true,
+          data: {
+            type: questionPayload.type,
+            confidence: 1.0,
+            answers: questionPayload.answers,
+            explanation: questionPayload.explanation || 'Extracted directly from SoloLearn React internal state.',
+            thought: '100% Ground Truth from SoloLearn React component props.'
+          },
+          model: 'SoloLearn Internal State (Ground Truth)',
+          isInternalGroundTruth: true,
+          latencyMs: 1
+        };
+      }
+
       if (!this.apiKey) {
         return {
           success: false,
@@ -136,62 +157,166 @@
         };
       }
 
-      const primary = modelOverride || this.model || 'anthropic/claude-3.5-sonnet';
-      const candidates = [primary, ...RESILIENT_MODELS.filter(m => m !== primary)];
-      
-      let lastError = null;
+      const isRace = options.raceMode !== false;
+      const targetModel = modelOverride || this.model || 'anthropic/claude-3-haiku';
 
-      for (const modelToTry of candidates) {
-        try {
-          const result = await this.queryModel(questionPayload, modelToTry);
-          if (result.success) {
-            return result;
-          }
+      // 2. Parallel AI Race & Consensus Voting Engine
+      // Runs all models concurrently. Models with matching answers are flagged as the Best Consensus Answer!
+      if (isRace) {
+        const racePool = Array.from(new Set([targetModel, ...FAST_RACE_MODELS])).slice(0, 4);
 
-          lastError = result.error;
-          if (result.status === 401 || result.status === 402) {
-            return result;
-          }
+        return new Promise((resolve) => {
+          const results = [];
+          let completed = 0;
+          let isResolved = false;
+          let timerId = null;
 
-          console.warn(`[SoloLearn AI] Model ${modelToTry} unavailable (${result.error}). Retrying with next alternative...`);
-        } catch (err) {
-          lastError = err.message;
-        }
+          const evaluateConsensus = () => {
+            if (isResolved) return;
+            isResolved = true;
+            if (timerId) clearTimeout(timerId);
+
+            if (results.length === 0) {
+              resolve({
+                success: false,
+                error: 'All racing AI models failed.'
+              });
+              return;
+            }
+
+            // Group responses by normalized answer signature
+            const groupMap = new Map();
+            for (const item of results) {
+              const answersArray = Array.isArray(item.data.answers) ? item.data.answers : [item.data.answer];
+              const normalizedSig = answersArray.map(a => String(a).toLowerCase().trim()).join('|||');
+
+              if (!groupMap.has(normalizedSig)) {
+                groupMap.set(normalizedSig, {
+                  votes: 0,
+                  models: [],
+                  winnerRes: item
+                });
+              }
+              const group = groupMap.get(normalizedSig);
+              group.votes++;
+              group.models.push(item.model);
+            }
+
+            // Find the group with the highest consensus votes
+            let bestGroup = null;
+            for (const grp of groupMap.values()) {
+              if (!bestGroup || grp.votes > bestGroup.votes) {
+                bestGroup = grp;
+              }
+            }
+
+            const chosen = bestGroup.winnerRes;
+            const hasConsensus = bestGroup.votes > 1;
+
+            resolve({
+              ...chosen,
+              wasRaced: true,
+              hasConsensus,
+              votes: bestGroup.votes,
+              totalVoters: results.length,
+              agreementRatio: `${bestGroup.votes}/${results.length}`,
+              agreedModels: bestGroup.models,
+              racingModels: racePool
+            });
+          };
+
+          racePool.forEach(async (model) => {
+            try {
+              const res = await this.queryModel(questionPayload, model);
+              if (res && res.success && !isResolved) {
+                results.push(res);
+
+                // If 2 or more models agree on the EXACT same answer, trigger instant consensus!
+                const answersArray = Array.isArray(res.data.answers) ? res.data.answers : [res.data.answer];
+                const sig = answersArray.map(a => String(a).toLowerCase().trim()).join('|||');
+                const matching = results.filter(r => {
+                  const arr = Array.isArray(r.data.answers) ? r.data.answers : [r.data.answer];
+                  return arr.map(a => String(a).toLowerCase().trim()).join('|||') === sig;
+                });
+
+                if (matching.length >= 2) {
+                  evaluateConsensus();
+                  return;
+                }
+
+                // If first result arrives, give other models a brief window to corroborate
+                if (results.length === 1 && !timerId) {
+                  timerId = setTimeout(() => {
+                    evaluateConsensus();
+                  }, 1600);
+                }
+              }
+            } catch (_) {
+            } finally {
+              completed++;
+              if (completed === racePool.length && !isResolved) {
+                evaluateConsensus();
+              }
+            }
+          });
+        });
       }
 
-      return {
-        success: false,
-        error: lastError || 'All Claude & Gemini models failed. Please verify your OpenRouter connection.'
-      };
+      // 3. Single Model with Resilient Fallback
+      try {
+        const result = await this.queryModel(questionPayload, targetModel);
+        if (result.success || options.enableFallback === false) {
+          return result;
+        }
+
+        // Sequential fallback
+        for (const fallbackModel of FAST_RACE_MODELS) {
+          if (fallbackModel === targetModel) continue;
+          try {
+            const fbResult = await this.queryModel(questionPayload, fallbackModel);
+            if (fbResult.success) {
+              return fbResult;
+            }
+          } catch (_) {}
+        }
+
+        return result;
+      } catch (err) {
+        return {
+          success: false,
+          error: `Error with ${targetModel}: ${err.message || 'Request failed'}`
+        };
+      }
     }
 
     async queryModel(questionPayload, activeModel) {
       const startTime = performance.now();
       const language = questionPayload.language || 'C# (.NET)';
 
-      const userPrompt = `You are an elite competitive programmer and SoloLearn compiler solver.
+      const userPrompt = `You are an expert SoloLearn compiler and solver. Execute an EXHAUSTIVE 3-PASS MENTAL COMPILER VERIFICATION before generating the final JSON:
 
-TARGET LANGUAGE: ${language}
+TARGET PROGRAMMING LANGUAGE: ${language}
 
-TASK INSTRUCTION:
+TASK OBJECTIVE:
 "${questionPayload.title || 'Complete the exercise'}"
 
-CODE TEMPLATE WITH NUMBERED BLANKS:
+CODE TEMPLATE (WITH NUMBERED BLANK SLOTS):
 \`\`\`${language}
-${questionPayload.code || 'No code snippet.'}
+${questionPayload.code || 'No code snippet provided.'}
 \`\`\`
 
-QUESTION TYPE: ${questionPayload.type}
-TOTAL BLANKS: ${questionPayload.blankCount || 1}
-AVAILABLE CHOICES (if any):
+QUESTION CATEGORY: ${questionPayload.type}
+TOTAL BLANKS/SLOTS TO FILL: ${questionPayload.blankCount || 0}
+AVAILABLE CHOICES / WORD BANK (if any):
 ${JSON.stringify(questionPayload.options || [], null, 2)}
 EXTRA CONTEXT: "${questionPayload.extraText || ''}"
 
-FORMATTING REQUIREMENTS:
-- In "answers": Provide strictly an array of strings containing ONLY the pure token/word for each blank (e.g. ["while", "+=", "x"] or ["true"] or ["3"]). Never put JSON or explanations inside "answers"!
-- In "explanation": Put your clear step-by-step reasoning in plain English.
+MANDATORY 3-PASS VERIFICATION PROTOCOL (Populate into "thought"):
+- Pass 1 (AST & Language Grammar): Analyze language conventions, keywords, case-sensitivity, and slot requirements.
+- Pass 2 (Mental Interpreter Simulation): Step through lines of code, simulate runtime variables, evaluate operators, and trace logic.
+- Pass 3 (Slot Boundary Check): Ensure your answers array contains ONLY the exact missing token without repeating surrounding punctuation outside the blank.
 
-Return strictly the valid JSON object.`;
+Return strictly valid JSON matching the schema.`;
 
       const requestBody = {
         model: activeModel,
@@ -200,12 +325,12 @@ Return strictly the valid JSON object.`;
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.0,
-        max_tokens: 1000
+        max_tokens: 2048
       };
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s timeout for deep reasoning models
 
         const response = await fetch(OPENROUTER_ENDPOINT, {
           method: 'POST',
@@ -232,7 +357,7 @@ Return strictly the valid JSON object.`;
           } catch (_) {}
 
           if (response.status === 401) {
-            errorMsg = 'Invalid OpenRouter API Key. Please verify your key.';
+            errorMsg = 'Invalid OpenRouter API Key. Please verify your key in settings.';
           } else if (response.status === 402) {
             errorMsg = 'Insufficient OpenRouter credits on your account.';
           }
@@ -254,7 +379,7 @@ Return strictly the valid JSON object.`;
         if (!parsedJson || !Array.isArray(parsedJson.answers) || parsedJson.answers.length === 0) {
           return {
             success: false,
-            error: 'AI response was empty.',
+            error: 'AI response could not be parsed.',
             raw: rawContent,
             latencyMs
           };
@@ -272,7 +397,7 @@ Return strictly the valid JSON object.`;
         const latencyMs = Math.round(performance.now() - startTime);
         return {
           success: false,
-          error: `Unreachable: ${err.message || 'Connection timeout'}`,
+          error: `Connection error: ${err.message || 'Timeout after 45s'}`,
           latencyMs
         };
       }

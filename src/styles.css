@@ -4,10 +4,11 @@
 
 #sololearn-ai-hud {
   position: fixed !important;
-  top: 24px !important;
-  right: 24px !important;
-  width: 400px !important;
+  top: 20px !important;
+  right: 20px !important;
+  width: 380px !important;
   max-width: calc(100vw - 32px) !important;
+  max-height: calc(100vh - 40px) !important;
   z-index: 2147483647 !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif !important;
   font-size: 13px !important;
@@ -42,6 +43,7 @@
   background: #1e293b !important;
   border-bottom: 1px solid #334155 !important;
   cursor: grab !important;
+  flex-shrink: 0 !important;
 }
 
 .sl-hud-header:active {
@@ -105,6 +107,7 @@
   background: #141f36 !important;
   border-bottom: 1px solid #1e293b !important;
   font-size: 12px !important;
+  flex-shrink: 0 !important;
 }
 
 .sl-status-pill {
@@ -142,13 +145,34 @@
   text-overflow: ellipsis !important;
 }
 
-/* Body */
+/* Body with automatic smooth scrollbar to prevent stretching off-screen */
 .sl-hud-body {
-  padding: 16px 18px !important;
+  padding: 14px 16px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 12px !important;
+  gap: 10px !important;
   background: #0f172a !important;
+  overflow-y: auto !important;
+  max-height: calc(100vh - 120px) !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #334155 transparent !important;
+}
+
+.sl-hud-body::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.sl-hud-body::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.sl-hud-body::-webkit-scrollbar-thumb {
+  background: #334155 !important;
+  border-radius: 4px !important;
+}
+
+.sl-hud-body::-webkit-scrollbar-thumb:hover {
+  background: #475569 !important;
 }
 
 /* Big Companion Answer Display Card */
@@ -161,6 +185,16 @@
   display: flex;
   flex-direction: column !important;
   gap: 10px !important;
+}
+
+.sl-companion-answer-card.consensus {
+  background: linear-gradient(135deg, #064e3b 0%, #0b1f33 100%) !important;
+  border: 2px solid #fbbf24 !important;
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.45) !important;
+}
+
+.sl-companion-answer-card.consensus .sl-companion-answer-header {
+  color: #fbbf24 !important;
 }
 
 .sl-companion-answer-header {
@@ -329,6 +363,22 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
   letter-spacing: 0.4px !important;
   z-index: 1000 !important;
+}
+
+.sl-ai-order-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  margin-right: 10px !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
+  letter-spacing: 0.5px !important;
+  border: 1px solid #34d399 !important;
 }
 
 #sololearn-ai-hud.minimized .sl-hud-body,

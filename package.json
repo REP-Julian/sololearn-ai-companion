@@ -1,7 +1,7 @@
 {
   "name": "sololearn-ai-solver",
-  "version": "1.0.0",
-  "description": "Flawless AI-powered automation solver for SoloLearn activities using OpenRouter models (Claude 3.5 Sonnet, GPT-4o, DeepSeek, Gemini).",
+  "version": "2.0.0",
+  "description": "Multi-AI consensus & 3-pass compiler solver for SoloLearn activities using OpenRouter free & active models.",
   "main": "src/main.js",
   "scripts": {
     "test": "node test/test_mock_cases.js",
@@ -17,7 +17,12 @@
     "userscript",
     "chrome-extension"
   ],
-  "author": "Antigravity",
+  "author": "Julian Agustino (https://github.com/REP-Julian)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/REP-Julian/sololearn-ai-companion.git"
+  },
+  "homepage": "https://github.com/REP-Julian/sololearn-ai-companion#readme",
   "license": "MIT",
   "devDependencies": {
     "jsdom": "^30.0.1"
