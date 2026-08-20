@@ -16,8 +16,6 @@ Powered by frontier AI models (**Anthropic Claude 3.5 Sonnet**, **Google Gemini 
 ## 👨‍💻 Created By
 
 **Julian Agustino**
-- GitHub: [@JulianAgustino](https://github.com/JulianAgustino)
-- Project Repository: [SoloLearn AI Companion](https://github.com/JulianAgustino)
 
 ---
 
