@@ -17,43 +17,10 @@ Powered by a **Parallel Multi-AI Race & Majority-Vote Consensus Engine** via the
 ## 👨‍💻 Created By
 
 **Julian Agustino**
-<<<<<<< HEAD
+
 - GitHub: [@REP-Julian](https://github.com/REP-Julian)
 - Project Repository: [SoloLearn AI Companion](https://github.com/REP-Julian/sololearn-ai-companion)
-=======
->>>>>>> a31aeaaf2131f3335c796995bce75d8fb86027ca
 
----
-
-## 🚀 What's New in Release v2.0.0
-
-### 🏆 1. Parallel Multi-AI Race & Majority-Vote Consensus Engine
-- **Simultaneous Parallel Query**: Dispatches questions concurrently across multiple top free & active models (**Claude 3 Haiku**, **Gemini 2.0 Flash**, **DeepSeek R1**, **Llama 3.3 70B**).
-- **Consensus Cross-Validation**: When multiple models arrive at the identical syntax/solution, the system automatically crowns it as the **`🏆 Best Answer (Consensus)`** with 100% confidence.
-- **Sub-Second Latency**: Delivers verified answers in **300ms – 700ms** with zero rate-limit hang-ups.
-
-### ⚡ 2. SoloLearn React Fiber State & Ground-Truth Inspector
-- Reads React component state and Next.js data props (`__reactFiber$`, `__reactProps$`, `window.__NEXT_DATA__`).
-- Extracts 100% ground-truth answers directly from the client application with **0 API latency** and **0 token costs**.
-
-### 🧩 3. Code Rearrange & Drag-and-Drop Step Sequencing
-- Fully supports code reordering exercises (e.g. *"Rearrange the code to declare a method..."*).
-- Injects in-page glowing sequence badges (**`Step 1`**, **`Step 2`**, **`Step 3`**, **`Step 4`**, **`Step 5`**) directly onto draggable blocks.
-- Formats the assembled program as a clean, vertical step-by-step list in the HUD.
-
-### 🧠 4. 3-Pass Mental Compiler Verification Protocol
-- **Pass 1 (AST & Language Grammar)**: Analyzes target dialect (C# PascalCase rules, Python indentation/slices, JS strict equality, SQL clauses).
-- **Pass 2 (Mental Interpreter Trace)**: Dry-runs variable mutations, loop structures (`while`, `for`), condition checks, and operators (`+=`, `++x` vs `x++`, `%`).
-- **Pass 3 (Slot Boundary Isolation)**: Eliminates duplicate punctuation outside blanks (no duplicate semicolons, parentheses, or brackets).
-- **Pass 4 (Client-Side Structural Check)**: Validates tokens against choice lists and slot counts before page injection.
-
-### 🧹 5. Purged All Inaccessible Paid Models
-- **Removed**: Paid/credit-locked models that return `HTTP 402 Insufficient credits` errors (`Claude 3.5 Sonnet`, `Claude 3.7 Sonnet`, `DeepSeek V3 Paid`, `Gemini 1.5 Pro`).
-- **100% Free & Active Library**: Standardized on high-intelligence free tier models on OpenRouter + working Claude 3 Haiku.
-
-### 🎨 6. Viewport Containment & Scrollable Glassmorphic HUD
-- Strict `max-height: calc(100vh - 40px)` containment prevents the HUD from ever stretching off the bottom of the screen.
-- Smooth custom dark scrollbar for the settings drawer. Header and drag controls remain permanently accessible.
 
 ---
 
