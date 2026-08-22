@@ -254,36 +254,6 @@ You can run this project as a **Tampermonkey Userscript** (recommended for all b
 | **`👎 Correct Me`** | **Mistake Correction** | Opens the self-correction drawer to teach the companion the correct answer for instant adaptation. |
 | **⚡ Auto-Scan** | **Toggle on HUD** | Automatically scans and reveals solutions in real time as questions change. |
 
----
-
-## 📢 Release v2.1.5 Highlights
-
-### 🚀 What's New in Version 2.1.5:
-* **🧠 Continuous Adaptive Learning & Self-Correction**:
-  * Persistent storage under `sololearn_ai_learning_memory_v1`.
-  * Instant **0ms latency, zero-token recall** for previously mastered questions.
-  * Formulates explicit **Mistake Reflections** on incorrect answers to adapt memory and prevent repeated errors.
-  * Pre-seeded with historical benchmark questions across Python, Java, C#, C++, SQL, JS, HTML/CSS, and definitions.
-* **☑️ Multi-Select & Checkbox Support ("Select All Correct Answers")**:
-  * Detects checkbox options (`<input type="checkbox">`, `[role="checkbox"]`, SVG checkbox icons, labels).
-  * Comprehensive pattern-matching evaluation (e.g. SQL `LIKE 'The%King_'` selecting both matching choices).
-  * In-page auto-fill checks all matching checkboxes simultaneously.
-* **🏁 3-Provider Synchronized Consensus**:
-  * Raced concurrently across **Mistral AI (Codestral)**, **Google AI Studio (Gemini 3.7 Flash)**, and **Hugging Face (Qwen 2.5 Coder 32B)**.
-  * Unanimous 3/3 and Majority 2/3 golden matching with automatic consensus re-scan on disagreement.
-  * Single-provider auto-expansion to 3 parallel internal models if only 1 key is provided.
-* **🔄 Removed Deprecated Models**:
-  * Cleaned out unstable third-party aggregators in favor of direct official API endpoints (`generativelanguage.googleapis.com`, `router.huggingface.co`, `api.mistral.ai`).
-  * Upgraded default models to `gemini-3.7-flash` and `Qwen/Qwen2.5-Coder-32B-Instruct`.
-* **🧪 29/29 Automated Tests Passed**: Complete test coverage across AST cleaning, React Fiber inspection, SQL multi-line auto-fill, memory adaptation, and multi-select checkboxes.
-
----
-
-## 🛡️ Security & Privacy
-
-- **Zero Hardcoded Secrets**: This repository contains zero hardcoded API keys or personal tokens.
-- **Client-Side Encrypted Storage**: Your API keys and learned memories are stored strictly on your local device via browser-isolated storage (`localStorage` / `chrome.storage.local`).
-- **Direct Encrypted Transport**: All API requests travel directly from your browser to official TLS/HTTPS endpoints (`api.mistral.ai`, `generativelanguage.googleapis.com`, `router.huggingface.co`).
 
 ---
 
