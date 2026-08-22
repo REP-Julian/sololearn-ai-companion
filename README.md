@@ -51,7 +51,6 @@ flowchart TD
     classDef raceStage fill:#2a1200,stroke:#ff7000,stroke-width:2px,color:#ffffff;
     classDef compilerStage fill:#14532d,stroke:#22c55e,stroke-width:2px,color:#ffffff;
     classDef consensusStage fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
-    classDef outputStage fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#ffffff;
     classDef decisionNode fill:#1e293b,stroke:#e2e8f0,stroke-width:2px,color:#f8fafc;
 
     START(["🚀 User / Auto-Scan Triggered (Alt + S)"]) --> DETECT["🖥️ DOM & Question Parser<br/>(Choices, Blanks, Reorder, Multi-Select)"]
@@ -59,19 +58,19 @@ flowchart TD
     DETECT --> CHECK_GT{"⚡ React Fiber & Next.js<br/>Internal Props Available?"}
     
     %% Fast Path 1: React Ground Truth
-    CHECK_GT -- "Yes (100% Ground Truth)" --> GT_FAST["⚡ Ground-Truth Instant Bypass<br/>(0ms Latency • 0 API Tokens)"]
-    GT_FAST --> DISP
+    CHECK_GT -->|"Yes (100% Ground Truth)"| GT_FAST["⚡ Ground-Truth Instant Bypass<br/>(0ms Latency • 0 API Tokens)"]
+    GT_FAST --> DISP["🎨 Client Injector & Visual HUD"]
     
     %% Fast Path 2: Adaptive Memory Bank
-    CHECK_GT -- "No" --> CHECK_MEM{"🧠 Found in Memory Bank?<br/>(Mastered / Previously Learned)"}
-    CHECK_MEM -- "Yes (Cache Hit)" --> MEM_FAST["🧠 0ms Instant Memory Recall<br/>(Zero API Cost • Fearless Accuracy)"]
+    CHECK_GT -->|"No"| CHECK_MEM{"🧠 Found in Memory Bank?<br/>(Mastered / Previously Learned)"}
+    CHECK_MEM -->|"Yes (Cache Hit)"| MEM_FAST["🧠 0ms Instant Memory Recall<br/>(Zero API Cost • Fearless Accuracy)"]
     MEM_FAST --> DISP
 
     %% Multi-AI Parallel Dispatch
-    CHECK_MEM -- "No (New Question)" --> DISPATCH{"🔑 Configured API Keys"}
+    CHECK_MEM -->|"No (New Question)"| DISPATCH{"🔑 Configured API Keys"}
     
-    DISPATCH -- "3 Keys Configured" --> RACE_PARALLEL["🏁 Multi-Provider Consensus Race<br/>(Parallel Async Queries)"]
-    DISPATCH -- "1 Key Configured" --> EXPAND["🔄 Single-Provider 3-Model Auto-Expansion"]
+    DISPATCH -->|"3 Keys Configured"| RACE_PARALLEL["🏁 Multi-Provider Consensus Race<br/>(Parallel Async Queries)"]
+    DISPATCH -->|"1 Key Configured"| EXPAND["🔄 Single-Provider 3-Model Auto-Expansion"]
     
     RACE_PARALLEL --> M1["🤖 Mistral AI<br/>Codestral 2501 (256K Context)"]
     RACE_PARALLEL --> M2["🤖 Google AI Studio<br/>Gemini 3.7 Flash (1M Context)"]
@@ -84,10 +83,10 @@ flowchart TD
     %% 4-Pass Verification
     subgraph COMPILER["⚙️ 4-Pass Mental Compiler Verification Engine"]
         direction TB
-        M1 --> P1
+        M1 --> P1["Pass 1: AST, Syntax & Language Grammar"]
         M2 --> P1
         M3 --> P1
-        P1["Pass 1: AST, Syntax & Language Grammar"] --> P2["Pass 2: Mental Interpreter Simulation"]
+        P1 --> P2["Pass 2: Mental Interpreter Simulation"]
         P2 --> P3["Pass 3: Word Bank & Option Matching"]
         P3 --> P4["Pass 4: Slot Isolation & Multi-Select Sanitization"]
     end
@@ -95,13 +94,13 @@ flowchart TD
     %% Consensus Voting Engine
     P4 --> CONSENSUS{"🤝 Consensus Voting Engine"}
     
-    CONSENSUS -- "3/3 Models Agree" --> U_WIN["🏆 3/3 Golden Unanimous Match<br/>(100% High Confidence)"]
-    CONSENSUS -- "2/3 Models Agree" --> M_WIN["🥇 2/3 Majority Golden Match<br/>(99% High Confidence)"]
-    CONSENSUS -- "Split / Disagreement" --> RESCAN["🔄 Auto Consensus Re-scan & Fallback"]
+    CONSENSUS -->|"3/3 Models Agree"| U_WIN["🏆 3/3 Golden Unanimous Match<br/>(100% High Confidence)"]
+    CONSENSUS -->|"2/3 Models Agree"| M_WIN["🥇 2/3 Majority Golden Match<br/>(99% High Confidence)"]
+    CONSENSUS -->|"Split / Disagreement"| RESCAN["🔄 Auto Consensus Re-scan & Fallback"]
     RESCAN --> M_WIN
 
     %% In-Page Display & Auto-Fill
-    U_WIN --> DISP["🎨 Client Injector & Visual HUD"]
+    U_WIN --> DISP
     M_WIN --> DISP
     
     DISP --> OUT1["🎯 In-Page Glowing Badges & Checkboxes"]
@@ -111,19 +110,18 @@ flowchart TD
     OUT1 --> SUBMIT{"SoloLearn Post-Submission Result"}
     OUT2 --> SUBMIT
     
-    SUBMIT -- "Correct" --> F_CORRECT["🧠 Mastered & Verified<br/>(Stored into sololearn_ai_learning_memory_v1)"]
-    SUBMIT -- "Incorrect" --> F_MISTAKE["🧠 Self-Correction & Mistake Reflection<br/>(Adapts memory to never repeat mistake)"]
+    SUBMIT -->|"Correct"| F_CORRECT["🧠 Mastered & Verified<br/>(Stored into persistent memory)"]
+    SUBMIT -->|"Incorrect"| F_MISTAKE["🧠 Self-Correction & Mistake Reflection<br/>(Adapts memory to never repeat mistake)"]
     
-    F_CORRECT --> SAVE_MEM[(🧠 Persistent Memory Bank)]
+    F_CORRECT --> SAVE_MEM[("🧠 Persistent Memory Bank")]
     F_MISTAKE --> SAVE_MEM
-    SAVE_MEM -.->|"Available for 0ms future recall"| CHECK_MEM
+    SAVE_MEM -.->|"Available for 0ms recall"| CHECK_MEM
 
-    class START,DETECT,GT_FAST clientStage;
+    class START,DETECT,GT_FAST,DISP,OUT1,OUT2 clientStage;
     class CHECK_MEM,MEM_FAST,F_CORRECT,F_MISTAKE,SAVE_MEM memoryStage;
     class DISPATCH,RACE_PARALLEL,EXPAND,M1,M2,M3 raceStage;
-    P1,P2,P3,P4 compilerStage;
+    class P1,P2,P3,P4 compilerStage;
     class CONSENSUS,U_WIN,M_WIN,RESCAN consensusStage;
-    class DISP,OUT1,OUT2 clientStage;
     class CHECK_GT,SUBMIT decisionNode;
 ```
 
