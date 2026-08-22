@@ -1,30 +1,31 @@
 /* ==========================================================================
-   SoloLearn AI Companion - Glassmorphic HUD & Visual Answer Styles
+   SoloLearn AI Companion - Sleek Modern Glassmorphic HUD & In-Page Styling
    ========================================================================== */
 
 #sololearn-ai-hud {
   position: fixed !important;
-  top: 20px !important;
-  right: 20px !important;
-  width: 380px !important;
+  top: 24px !important;
+  right: 24px !important;
+  width: 350px !important;
   max-width: calc(100vw - 32px) !important;
-  max-height: calc(100vh - 40px) !important;
+  max-height: calc(100vh - 48px) !important;
   z-index: 2147483647 !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif !important;
   font-size: 13px !important;
   line-height: 1.5 !important;
-  color: #ffffff !important;
-  background: rgba(15, 23, 42, 0.96) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid #334155 !important;
-  border-radius: 18px !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(56, 189, 248, 0.25) !important;
+  color: #f8fafc !important;
+  background: rgba(11, 18, 33, 0.94) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.15) !important;
   box-sizing: border-box !important;
   user-select: none !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
+  transition: box-shadow 0.2s ease !important;
 }
 
 #sololearn-ai-hud *,
@@ -39,9 +40,9 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 14px 18px !important;
-  background: #1e293b !important;
-  border-bottom: 1px solid #334155 !important;
+  padding: 12px 16px !important;
+  background: rgba(30, 41, 59, 0.7) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   cursor: grab !important;
   flex-shrink: 0 !important;
 }
@@ -54,46 +55,48 @@
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  font-size: 15px !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
   color: #ffffff !important;
+  letter-spacing: -0.2px !important;
 }
 
 .sl-brand-icon {
-  width: 28px !important;
-  height: 28px !important;
+  width: 26px !important;
+  height: 26px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: linear-gradient(135deg, #0284c7, #8b5cf6) !important;
-  border-radius: 8px !important;
-  font-size: 14px !important;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1) !important;
+  border-radius: 7px !important;
+  font-size: 13px !important;
   color: #ffffff !important;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.5) !important;
 }
 
 .sl-hud-controls {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
 }
 
 .sl-icon-btn {
-  background: #334155 !important;
-  border: 1px solid #475569 !important;
-  color: #e2e8f0 !important;
-  width: 30px !important;
-  height: 30px !important;
-  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 7px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
+  transition: all 0.15s ease !important;
 }
 
 .sl-icon-btn:hover {
-  background: #475569 !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   color: #ffffff !important;
   border-color: #38bdf8 !important;
 }
@@ -103,105 +106,134 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 18px !important;
-  background: #141f36 !important;
-  border-bottom: 1px solid #1e293b !important;
-  font-size: 12px !important;
+  padding: 8px 16px !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  font-size: 11px !important;
   flex-shrink: 0 !important;
 }
 
 .sl-status-pill {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
   font-weight: 600 !important;
-  color: #e2e8f0 !important;
+  color: #cbd5e1 !important;
 }
 
 .sl-status-dot {
-  width: 9px !important;
-  height: 9px !important;
+  width: 8px !important;
+  height: 8px !important;
   border-radius: 50% !important;
   display: inline-block !important;
 }
 
 .sl-status-dot.idle { background: #94a3b8 !important; }
-.sl-status-dot.thinking { background: #f59e0b !important; box-shadow: 0 0 10px #f59e0b !important; }
-.sl-status-dot.success { background: #10b981 !important; box-shadow: 0 0 10px #10b981 !important; }
-.sl-status-dot.error { background: #ef4444 !important; box-shadow: 0 0 10px #ef4444 !important; }
-.sl-status-dot.active { background: #38bdf8 !important; box-shadow: 0 0 10px #38bdf8 !important; }
+.sl-status-dot.thinking { background: #f59e0b !important; box-shadow: 0 0 8px #f59e0b !important; }
+.sl-status-dot.success { background: #10b981 !important; box-shadow: 0 0 8px #10b981 !important; }
+.sl-status-dot.error { background: #ef4444 !important; box-shadow: 0 0 8px #ef4444 !important; }
+.sl-status-dot.active { background: #38bdf8 !important; box-shadow: 0 0 8px #38bdf8 !important; }
 
 .sl-model-badge {
-  font-size: 11px !important;
+  font-size: 10px !important;
   font-weight: 700 !important;
-  padding: 4px 10px !important;
-  background: #0369a1 !important;
-  color: #ffffff !important;
-  border: 1px solid #38bdf8 !important;
-  border-radius: 14px !important;
-  max-width: 170px !important;
+  padding: 3px 8px !important;
+  background: rgba(2, 132, 199, 0.2) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border-radius: 12px !important;
+  max-width: 150px !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
-/* Body with automatic smooth scrollbar to prevent stretching off-screen */
+/* Body Container */
 .sl-hud-body {
-  padding: 14px 16px !important;
+  padding: 12px 14px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 10px !important;
-  background: #0f172a !important;
+  gap: 8px !important;
+  background: transparent !important;
   overflow-y: auto !important;
-  max-height: calc(100vh - 120px) !important;
+  max-height: calc(100vh - 110px) !important;
   scrollbar-width: thin !important;
-  scrollbar-color: #334155 transparent !important;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
 }
 
 .sl-hud-body::-webkit-scrollbar {
-  width: 6px !important;
-}
-
-.sl-hud-body::-webkit-scrollbar-track {
-  background: transparent !important;
+  width: 5px !important;
 }
 
 .sl-hud-body::-webkit-scrollbar-thumb {
-  background: #334155 !important;
-  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 3px !important;
 }
 
-.sl-hud-body::-webkit-scrollbar-thumb:hover {
-  background: #475569 !important;
-}
-
-/* Big Companion Answer Display Card */
+/* Big Solution Card */
 .sl-companion-answer-card {
-  padding: 14px 16px !important;
-  background: linear-gradient(135deg, #064e3b 0%, #022c22 100%) !important;
-  border: 2px solid #10b981 !important;
+  padding: 12px 14px !important;
+  background: linear-gradient(145deg, rgba(6, 78, 59, 0.6) 0%, rgba(2, 44, 34, 0.8) 100%) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.6) !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35) !important;
-  display: flex;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25) !important;
+  display: flex !important;
   flex-direction: column !important;
-  gap: 10px !important;
+  gap: 8px !important;
+  transition: all 0.3s ease !important;
 }
 
+/* Luxurious Golden Consensus Match Highlight */
+.sl-companion-answer-card.golden-match,
 .sl-companion-answer-card.consensus {
-  background: linear-gradient(135deg, #064e3b 0%, #0b1f33 100%) !important;
+  background: linear-gradient(145deg, rgba(120, 53, 15, 0.75) 0%, rgba(30, 27, 75, 0.9) 50%, rgba(6, 78, 59, 0.75) 100%) !important;
   border: 2px solid #fbbf24 !important;
-  box-shadow: 0 0 25px rgba(251, 191, 36, 0.45) !important;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.55), inset 0 0 15px rgba(251, 191, 36, 0.2) !important;
 }
 
+/* Learned Knowledge Bank Glow */
+.sl-companion-answer-card.learned-memory {
+  background: linear-gradient(145deg, rgba(6, 78, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(4, 120, 87, 0.85) 100%) !important;
+  border: 2px solid #10b981 !important;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.55), inset 0 0 15px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Self-Correction Adapted Glow */
+.sl-companion-answer-card.corrected-memory {
+  background: linear-gradient(145deg, rgba(120, 53, 15, 0.85) 0%, rgba(30, 27, 75, 0.9) 50%, rgba(180, 83, 9, 0.85) 100%) !important;
+  border: 2px solid #f59e0b !important;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.55), inset 0 0 15px rgba(245, 158, 11, 0.2) !important;
+}
+
+.sl-companion-answer-card.golden-match .sl-companion-answer-header,
 .sl-companion-answer-card.consensus .sl-companion-answer-header {
   color: #fbbf24 !important;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.6) !important;
+}
+
+.sl-companion-answer-card.learned-memory .sl-companion-answer-header {
+  color: #34d399 !important;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.6) !important;
+}
+
+.sl-companion-answer-card.corrected-memory .sl-companion-answer-header {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.6) !important;
+}
+
+.sl-companion-answer-card.golden-match .sl-companion-answer-content,
+.sl-companion-answer-card.consensus .sl-companion-answer-content {
+  border: 1px solid rgba(251, 191, 36, 0.5) !important;
+  background: rgba(0, 0, 0, 0.65) !important;
+  color: #fef08a !important;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.3) !important;
 }
 
 .sl-companion-answer-header {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  font-size: 12px !important;
+  justify-content: space-between !important;
+  font-size: 11px !important;
   font-weight: 800 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
@@ -209,64 +241,135 @@
 }
 
 .sl-companion-answer-content {
-  font-size: 18px !important;
-  font-weight: 800 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
   color: #ffffff !important;
-  background: rgba(0, 0, 0, 0.45) !important;
-  padding: 10px 14px !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  padding: 8px 12px !important;
   border-radius: 8px !important;
-  border: 1px solid rgba(52, 211, 153, 0.4) !important;
-  line-height: 1.4 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  line-height: 1.5 !important;
   word-break: break-word !important;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  white-space: pre-wrap !important;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace !important;
 }
 
 .sl-companion-explanation {
-  font-size: 12px !important;
-  color: #d1fae5 !important;
-  line-height: 1.5 !important;
-  border-top: 1px dashed rgba(16, 185, 129, 0.4) !important;
-  padding-top: 8px !important;
+  font-size: 11px !important;
+  color: #e2e8f0 !important;
+  line-height: 1.4 !important;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12) !important;
+  padding-top: 6px !important;
 }
 
-/* Primary Reveal Answer Button */
+/* Feedback Buttons */
+.sl-feedback-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.sl-feedback-btn {
+  flex: 1 !important;
+  padding: 5px 8px !important;
+  border-radius: 6px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  transition: all 0.15s ease !important;
+}
+
+.sl-feedback-correct {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  color: #6ee7b7 !important;
+}
+
+.sl-feedback-correct:hover {
+  background: rgba(16, 185, 129, 0.3) !important;
+  border-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.sl-feedback-wrong {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+  color: #fca5a5 !important;
+}
+
+.sl-feedback-wrong:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+/* Action Buttons */
+.sl-action-row {
+  display: flex !important;
+  gap: 8px !important;
+}
+
 .sl-btn-primary {
   width: 100% !important;
-  padding: 13px 18px !important;
+  padding: 10px 14px !important;
   background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
   color: #ffffff !important;
-  border: 1px solid #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
   border-radius: 10px !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45) !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35) !important;
+  transition: all 0.15s ease !important;
 }
 
 .sl-btn-primary:hover {
   background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%) !important;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.5) !important;
+}
+
+.sl-autofill-btn {
+  padding: 10px 14px !important;
+  background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
+  border: 1px solid rgba(52, 211, 153, 0.5) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+  transition: all 0.15s ease !important;
+}
+
+.sl-autofill-btn:hover {
+  background: linear-gradient(135deg, #047857 0%, #0f766e 100%) !important;
+  box-shadow: 0 4px 16px rgba(52, 211, 153, 0.45) !important;
 }
 
 .sl-hotkey-hint {
-  font-size: 11px !important;
-  padding: 2px 6px !important;
-  background: #0c4a6e !important;
-  border: 1px solid #38bdf8 !important;
+  font-size: 10px !important;
+  padding: 2px 5px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 4px !important;
   color: #ffffff !important;
-  margin-left: auto !important;
   font-weight: 700 !important;
+  margin-left: auto !important;
 }
 
-/* Auto-Scan Toggle */
+/* Auto-Scan & Consensus Toggles */
 .sl-toggle-btn {
-  padding: 10px 14px !important;
-  background: #1e293b !important;
-  border: 1px solid #475569 !important;
+  padding: 9px 12px !important;
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 10px !important;
   color: #94a3b8 !important;
   font-size: 12px !important;
@@ -275,21 +378,51 @@
   align-items: center !important;
   justify-content: space-between !important;
   cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.sl-toggle-btn:hover {
+  background: rgba(51, 65, 85, 0.8) !important;
+  color: #e2e8f0 !important;
 }
 
 .sl-toggle-btn.active {
-  background: #064e3b !important;
-  border-color: #10b981 !important;
+  background: rgba(6, 78, 59, 0.7) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
   color: #34d399 !important;
+}
+
+/* Log Box */
+.sl-log-box {
+  padding: 6px 10px !important;
+  background: rgba(0, 0, 0, 0.25) !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  color: #94a3b8 !important;
+  line-height: 1.4 !important;
+  text-align: center !important;
+}
+
+.sl-log-box .highlight {
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+.sl-log-box.success {
+  color: #34d399 !important;
+}
+
+.sl-log-box.error {
+  color: #f87171 !important;
 }
 
 /* Settings Drawer */
 .sl-settings-drawer {
   display: none !important;
   flex-direction: column !important;
-  gap: 12px !important;
-  padding-top: 12px !important;
-  border-top: 1px solid #334155 !important;
+  gap: 10px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .sl-settings-drawer.open {
@@ -299,11 +432,11 @@
 .sl-field-group {
   display: flex !important;
   flex-direction: column !important;
-  gap: 6px !important;
+  gap: 5px !important;
 }
 
 .sl-field-label {
-  font-size: 11px !important;
+  font-size: 10px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
@@ -312,32 +445,18 @@
 
 .sl-input, .sl-select {
   width: 100% !important;
-  padding: 9px 12px !important;
-  background: #020617 !important;
-  border: 1px solid #475569 !important;
-  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  background: rgba(2, 6, 23, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 7px !important;
   color: #ffffff !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   outline: none !important;
+  transition: border-color 0.15s ease !important;
 }
 
 .sl-input:focus, .sl-select:focus {
   border-color: #38bdf8 !important;
-}
-
-.sl-btn-secondary {
-  padding: 9px 14px !important;
-  background: #0369a1 !important;
-  border: 1px solid #38bdf8 !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-}
-
-.sl-btn-secondary:hover {
-  background: #0284c7 !important;
 }
 
 /* In-Page Visual Highlighter Badges & Glowing Outline */
@@ -347,19 +466,19 @@
   background: rgba(16, 185, 129, 0.15) !important;
   box-shadow: 0 0 20px rgba(16, 185, 129, 0.55) !important;
   border-radius: 12px !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.25s ease !important;
 }
 
 .sl-ai-badge {
   position: absolute !important;
-  top: -12px !important;
-  right: 12px !important;
+  top: -10px !important;
+  right: 10px !important;
   background: #10b981 !important;
   color: #ffffff !important;
-  font-size: 11px !important;
+  font-size: 10px !important;
   font-weight: 800 !important;
-  padding: 2px 8px !important;
-  border-radius: 10px !important;
+  padding: 2px 7px !important;
+  border-radius: 8px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
   letter-spacing: 0.4px !important;
   z-index: 1000 !important;
@@ -371,13 +490,13 @@
   justify-content: center !important;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   color: #ffffff !important;
-  font-size: 11px !important;
+  font-size: 10px !important;
   font-weight: 800 !important;
-  padding: 3px 8px !important;
-  border-radius: 6px !important;
-  margin-right: 10px !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
-  letter-spacing: 0.5px !important;
+  padding: 2px 7px !important;
+  border-radius: 5px !important;
+  margin-right: 8px !important;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4) !important;
+  letter-spacing: 0.4px !important;
   border: 1px solid #34d399 !important;
 }
 

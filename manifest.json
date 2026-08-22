@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SoloLearn AI Automation Solver",
-  "version": "2.0.0",
-  "description": "Multi-AI consensus & 3-pass compiler solver for SoloLearn activities using OpenRouter free & active models.",
+  "name": "SoloLearn AI Companion",
+  "version": "2.1.5",
+  "description": "Multi-Provider AI (Codestral, Gemini, Hugging Face) with Continuous Adaptive Learning & Self-Correction for SoloLearn interactive courses, quizzes, and code rearrange exercises.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -20,7 +20,11 @@
     "storage"
   ],
   "host_permissions": [
-    "https://openrouter.ai/*",
+    "https://api.mistral.ai/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://router.huggingface.co/*",
+    "https://api-inference.huggingface.co/*",
+    "https://huggingface.co/*",
     "https://*.sololearn.com/*"
   ],
   "content_scripts": [
@@ -31,7 +35,11 @@
       ],
       "js": [
         "src/config.js",
-        "src/openrouter.js",
+        "src/memory.js",
+        "src/mistral.js",
+        "src/providers/gemini.js",
+        "src/providers/huggingface.js",
+        "src/consensus.js",
         "src/parser.js",
         "src/executor.js",
         "src/ui.js",

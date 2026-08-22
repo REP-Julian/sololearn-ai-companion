@@ -9,15 +9,22 @@ const rootDir = path.join(__dirname, '..');
 const srcDir = path.join(rootDir, 'src');
 
 const header = `// ==UserScript==
-// @name         SoloLearn AI Companion (Multi-AI Consensus & 3-Pass Solver)
+// @name         SoloLearn AI Companion (Codestral, Google AI Studio & Hugging Face)
 // @namespace    https://github.com/REP-Julian/sololearn-ai-companion
-// @version      2.0.0
-// @description  Multi-AI consensus & 3-pass compiler solver for SoloLearn interactive courses, quizzes, and code rearrange tasks.
+// @version      2.1.5
+// @description  Multi-Provider AI (Mistral Codestral, Google AI Studio Gemini, Hugging Face Qwen Coder) with Continuous Adaptive Learning & Self-Correction for SoloLearn.
 // @author       Julian Agustino (@REP-Julian)
 // @homepage     https://github.com/REP-Julian/sololearn-ai-companion
 // @match        https://*.sololearn.com/*
 // @match        https://sololearn.com/*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @grant        GM.xmlHttpRequest
+// @connect      api.mistral.ai
+// @connect      generativelanguage.googleapis.com
+// @connect      router.huggingface.co
+// @connect      api-inference.huggingface.co
+// @connect      huggingface.co
+// @connect      *
 // @run-at       document-end
 // ==/UserScript==
 
@@ -29,7 +36,11 @@ const header = `// ==UserScript==
 
 const cssContent = fs.readFileSync(path.join(srcDir, 'styles.css'), 'utf8');
 const configContent = fs.readFileSync(path.join(srcDir, 'config.js'), 'utf8');
-const openrouterContent = fs.readFileSync(path.join(srcDir, 'openrouter.js'), 'utf8');
+const memoryContent = fs.readFileSync(path.join(srcDir, 'memory.js'), 'utf8');
+const mistralContent = fs.readFileSync(path.join(srcDir, 'mistral.js'), 'utf8');
+const geminiContent = fs.readFileSync(path.join(srcDir, 'providers', 'gemini.js'), 'utf8');
+const huggingfaceContent = fs.readFileSync(path.join(srcDir, 'providers', 'huggingface.js'), 'utf8');
+const consensusContent = fs.readFileSync(path.join(srcDir, 'consensus.js'), 'utf8');
 const parserContent = fs.readFileSync(path.join(srcDir, 'parser.js'), 'utf8');
 const executorContent = fs.readFileSync(path.join(srcDir, 'executor.js'), 'utf8');
 const uiContent = fs.readFileSync(path.join(srcDir, 'ui.js'), 'utf8');
@@ -48,8 +59,20 @@ const injectionWrapper = `
   // Load Config
   ${configContent}
 
-  // Load OpenRouter Client
-  ${openrouterContent}
+  // Load Adaptive Learning & Self-Correction Memory Engine
+  ${memoryContent}
+
+  // Load Mistral AI Provider
+  ${mistralContent}
+
+  // Load Google AI Studio (Gemini) Provider
+  ${geminiContent}
+
+  // Load Hugging Face Provider
+  ${huggingfaceContent}
+
+  // Load Multi-Provider Consensus Engine
+  ${consensusContent}
 
   // Load Parser
   ${parserContent}

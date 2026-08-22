@@ -1,6 +1,6 @@
 /**
- * SoloLearn AI Companion - Claude, Gemini & DeepSeek Dedicated Configuration
- * Powers 100% Accurate SoloLearn Solving with React Internal State Inspection & 3-Pass Compiler Verification.
+ * SoloLearn AI Companion - Native Mistral AI & Codestral Configuration
+ * Powers 100% Accurate SoloLearn Solving with Codestral, Mistral Large, and 3-Pass Compiler Verification.
  */
 
 (function (root, factory) {
@@ -12,60 +12,56 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  // 100% Free & Working Models on OpenRouter (Zero Paid Models)
-  const DEFAULT_MODELS = [
-    {
-      id: 'anthropic/claude-3-haiku',
-      name: 'Claude 3 Haiku (Active & Working - 3-Pass Verified)',
-      badge: 'Anthropic',
-      recommended: true
-    },
-    {
-      id: 'google/gemini-2.0-flash-exp:free',
-      name: 'Gemini 2.0 Flash (100% Free - Ultra Fast & Accurate)',
-      badge: 'Google (Free)',
-      recommended: false
-    },
-    {
-      id: 'deepseek/deepseek-r1:free',
-      name: 'DeepSeek R1 Reasoning (100% Free - Deep Code Logic)',
-      badge: 'DeepSeek (Free)',
-      recommended: false
-    },
-    {
-      id: 'google/gemini-2.0-flash-thinking-exp:free',
-      name: 'Gemini 2.0 Thinking (100% Free - CoT Reasoning)',
-      badge: 'Google (Free)',
-      recommended: false
-    },
-    {
-      id: 'meta-llama/llama-3.3-70b-instruct:free',
-      name: 'Llama 3.3 70B (100% Free - Top Open Weights)',
-      badge: 'Meta (Free)',
-      recommended: false
-    },
-    {
-      id: 'mistralai/mistral-small-24b-instruct-2501:free',
-      name: 'Mistral Small 24B (100% Free - Fast & Accurate)',
-      badge: 'Mistral (Free)',
-      recommended: false
-    },
-    {
-      id: 'deepseek/deepseek-chat:free',
-      name: 'DeepSeek V3 (100% Free on OpenRouter)',
-      badge: 'DeepSeek (Free)',
-      recommended: false
-    }
+  // Multi-Provider Model Rosters
+  const MISTRAL_MODELS = [
+    { id: 'codestral-latest', name: 'Codestral Latest (Mistral AI Dedicated Code Model)', badge: 'Codestral', provider: 'mistral', recommended: true },
+    { id: 'mistral-small-latest', name: 'Mistral Small Latest (Fast & Lightweight)', badge: 'Mistral Small', provider: 'mistral' },
+    { id: 'open-mistral-nemo', name: 'Mistral NeMo 12B (Fast Free Tier)', badge: 'Mistral NeMo', provider: 'mistral' },
+    { id: 'ministral-8b-latest', name: 'Ministral 8B Latest (Ultra Efficient)', badge: 'Ministral 8B', provider: 'mistral' },
+    { id: 'mistral-large-latest', name: 'Mistral Large Latest (Flagship 123B SOTA)', badge: 'Mistral Large', provider: 'mistral' }
+  ];
+
+  const GEMINI_MODELS = [
+    { id: 'gemini-3.7-flash', name: 'Google Gemini 3.7 Flash (Flagship Fast Reasoning)', badge: 'Gemini 3.7 Flash', provider: 'gemini', recommended: true },
+    { id: 'gemini-3.6-flash', name: 'Google Gemini 3.6 Flash (Next-Gen Intelligence)', badge: 'Gemini 3.6 Flash', provider: 'gemini' },
+    { id: 'gemini-3.5-flash-lite', name: 'Google Gemini 3.5 Flash Lite (High Quota 500 RPD)', badge: 'Gemini 3.5 Lite', provider: 'gemini' },
+    { id: 'gemini-3.1-flash-lite', name: 'Google Gemini 3.1 Flash Lite (High Quota 500 RPD)', badge: 'Gemini 3.1 Lite', provider: 'gemini' },
+    { id: 'gemini-3.5-flash', name: 'Google Gemini 3.5 Flash (Ultra Fast & Stable)', badge: 'Gemini 3.5 Flash', provider: 'gemini' },
+    { id: 'gemini-3-flash', name: 'Google Gemini 3 Flash (Fast & Reliable)', badge: 'Gemini 3 Flash', provider: 'gemini' },
+    { id: 'gemini-2.5-flash', name: 'Google Gemini 2.5 Flash', badge: 'Gemini 2.5 Flash', provider: 'gemini' },
+    { id: 'gemini-2.5-flash-lite', name: 'Google Gemini 2.5 Flash Lite', badge: 'Gemini 2.5 Lite', provider: 'gemini' }
+  ];
+
+  const HUGGINGFACE_MODELS = [
+    { id: 'Qwen/Qwen2.5-Coder-32B-Instruct', name: 'Qwen 2.5 Coder 32B (SOTA Coding)', badge: 'Qwen Coder', provider: 'huggingface', recommended: true },
+    { id: 'meta-llama/Llama-3.3-70B-Instruct', name: 'Llama 3.3 70B Instruct (Flagship)', badge: 'Llama 3.3', provider: 'huggingface' },
+    { id: 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', name: 'DeepSeek R1 Distill Qwen 32B (Reasoning)', badge: 'DeepSeek R1', provider: 'huggingface' },
+    { id: 'mistralai/Mistral-7B-Instruct-v0.3', name: 'Mistral 7B Instruct (Fast)', badge: 'Mistral 7B', provider: 'huggingface' }
   ];
 
   const DEFAULT_SETTINGS = {
+    // Multi-Provider API Keys (Saved securely in browser local storage)
+    mistralApiKey: '',
+    geminiApiKey: '',
+    huggingfaceApiKey: '',
     apiKey: '',
-    selectedModel: 'anthropic/claude-3-haiku',
-    customModel: '',
+
+    // Provider Active Models
+    mistralModel: 'codestral-latest',
+    geminiModel: 'gemini-3.7-flash',
+    huggingfaceModel: 'Qwen/Qwen2.5-Coder-32B-Instruct',
+    selectedModel: 'codestral-latest',
+
+    // Engine & Consensus Mode
+    consensusMode: true, // Parallel 3-Provider Majority Voting
+    singleProvider: 'mistral', // 'mistral' | 'gemini' | 'huggingface' (when consensusMode is off)
+
+    // General Settings
     languageOverride: 'auto',
-    raceMode: true,
+    cacheEnabled: true,
     enableFallback: true,
     autoSolve: false,
+    autoFill: false,
     autoSubmit: false,
     autoNext: false,
     inspectReactInternals: true,
@@ -78,7 +74,21 @@
     temperature: 0.0
   };
 
-  const STORAGE_KEY = 'sololearn_ai_solver_settings_v1';
+  const STORAGE_KEY = 'sololearn_ai_solver_settings_v2';
+
+  function sanitizeLoadedSettings(raw) {
+    const s = { ...DEFAULT_SETTINGS, ...raw };
+    if (s.apiKey && !s.mistralApiKey) s.mistralApiKey = s.apiKey;
+    if (raw.groqApiKey && !s.geminiApiKey) s.geminiApiKey = raw.groqApiKey;
+    if (raw.cerebrasApiKey && !s.huggingfaceApiKey) s.huggingfaceApiKey = raw.cerebrasApiKey;
+    if (raw.openrouterApiKey && !s.huggingfaceApiKey) s.huggingfaceApiKey = raw.openrouterApiKey;
+    const validGeminiIds = GEMINI_MODELS.map(m => m.id);
+    if (!s.geminiModel || !validGeminiIds.includes(s.geminiModel)) {
+      s.geminiModel = 'gemini-3.7-flash';
+    }
+    if (!s.huggingfaceModel) s.huggingfaceModel = 'Qwen/Qwen2.5-Coder-32B-Instruct';
+    return s;
+  }
 
   const Storage = {
     async get() {
@@ -87,10 +97,11 @@
           return new Promise((resolve) => {
             chrome.storage.local.get([STORAGE_KEY], (result) => {
               if (result && result[STORAGE_KEY]) {
-                resolve({ ...DEFAULT_SETTINGS, ...result[STORAGE_KEY] });
+                resolve(sanitizeLoadedSettings(result[STORAGE_KEY]));
               } else {
-                const local = localStorage.getItem(STORAGE_KEY);
-                resolve(local ? { ...DEFAULT_SETTINGS, ...JSON.parse(local) } : { ...DEFAULT_SETTINGS });
+                const local = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('sololearn_ai_solver_settings_v1');
+                const parsed = local ? JSON.parse(local) : {};
+                resolve(sanitizeLoadedSettings(parsed));
               }
             });
           });
@@ -98,15 +109,17 @@
       } catch (e) {}
 
       try {
-        const local = localStorage.getItem(STORAGE_KEY);
-        return local ? { ...DEFAULT_SETTINGS, ...JSON.parse(local) } : { ...DEFAULT_SETTINGS };
+        const local = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('sololearn_ai_solver_settings_v1');
+        const parsed = local ? JSON.parse(local) : {};
+        return sanitizeLoadedSettings(parsed);
       } catch (err) {
         return { ...DEFAULT_SETTINGS };
       }
     },
 
     async save(settings) {
-      const merged = { ...DEFAULT_SETTINGS, ...settings };
+      const merged = sanitizeLoadedSettings(settings);
+      if (merged.mistralApiKey) merged.apiKey = merged.mistralApiKey;
       try {
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
           chrome.storage.local.set({ [STORAGE_KEY]: merged });
@@ -121,72 +134,135 @@
   };
 
   const PROMPT_TEMPLATE = {
-    SYSTEM: `You are an elite competitive programmer, compiler engineer, and computer science professor acting as the ultimate SoloLearn AI Solver.
-Your goal is 100% MATHEMATICALLY, LOGICALLY, AND SYNTACTICALLY FLAWLESS answers on every single question.
+    SYSTEM: `You are an Elite Grandmaster Compiler Architect & Competitive Programming AI (ACM-ICPC World Finalist level).
+Your absolute goal is 100% MATHEMATICAL, LOGICAL, AND SYNTACTIC PERFECTION on every coding exercise.
 
-YOU ARE REQUIRED TO EXECUTE A THOROUGH 3-PASS REASONING PROCESS IN YOUR "thought" FIELD BEFORE GENERATING THE ANSWERS ARRAY:
-
-=======================================================
-=== PASS 1: SYNTAX, GRAMMAR & AST DECONSTRUCTION ===
-=======================================================
-1. Language & Dialect Detection:
-   - C# (.NET): Strict PascalCase for methods/classes (e.g. 'Sum', 'Square', 'Main', 'Console.WriteLine'), strict semicolons, typed variables ('int', 'string', 'bool', 'void').
-   - Python: Strict indentation, 0-indexed slicing (start:end is exclusive), '//' integer division vs '/' float division, 'def', 'return', 'self'.
-   - JavaScript: 'let'/'const'/'var', strict equality '===', arrow functions, template literals.
-   - Java: camelCase methods ('println'), PascalCase classes, strict type system.
-   - C++: 'std::cout', 'std::cin', pointers '*', references '&', semicolons.
-   - SQL: 'SELECT', 'FROM', 'WHERE', 'GROUP BY', 'HAVING', 'ORDER BY', 'JOIN'.
-2. Classify Question Mechanics:
-   - Fill-in-the-blanks: Code template with numbered blanks [BLANK_1], [BLANK_2]...
-   - Single-choice / Multiple-choice: Pre-defined options list.
-   - Reorder / Drag-and-Drop: Jumbled code lines to assemble into a working program.
-   - General / Output prediction: Mental execution calculation.
+YOU MUST EXECUTE A DEEP 4-PASS VERIFICATION BEFORE GENERATING THE JSON RESPONSE:
 
 =======================================================
-=== PASS 2: MENTAL INTERPRETER & DRY-RUN TRACE ===
+=== PASS 1: AST, LANGUAGE GRAMMAR & SCOPE ANALYSIS ===
 =======================================================
-1. Simulate execution line-by-line:
-   - Initialize variables, trace state mutations on each statement.
-   - For loops/while: Check initialization, condition evaluation, step increment, and exact loop termination.
-   - Method declarations & calls: Verify return type matches 'return' statement, and method call identifier matches declaration name ('Sum' vs 'sum').
-   - Operators:
-     * Shorthand assignment: 'x += 5;' means 'x = x + 5;'.
-     * Increment/Decrement: 'x++' (returns old value first) vs '++x' (increments immediately).
-     * Modulo '%': Remainder of integer division (e.g. 7 % 3 = 1).
-     * Boolean logic: Short-circuit evaluation rules ('&&' stops on false, '||' stops on true).
+1. Target Language Conventions:
+   - Java:
+     * Variable & String Concatenation: 'String msg = [BLANK_1] + [BLANK_2];' -> [BLANK_1] is "Hello, " (or the literal string), [BLANK_2] is the variable name (e.g. 'name').
+     * Output statement: 'System.out.println( [BLANK_3] );' -> [BLANK_3] is 'msg' (or 'System.out.print').
+     * Class declaration: '[BLANK_1] Sum {' -> [BLANK_1] is 'class' (NEVER 'Sum'!).
+     * Main method: 'public static void [BLANK_2] (String[] args)' -> [BLANK_2] is 'main'.
+     * Print output: 'System. [BLANK_3] .println(a [BLANK_4] b);' -> [BLANK_3] is 'out', [BLANK_4] is '+'.
+   - C# (.NET):
+     * Class declaration: '[BLANK_1] Program {' -> [BLANK_1] is 'class' (NEVER 'Program'!).
+     * Main method: 'static void [BLANK_2] (string[] args)' -> [BLANK_2] is 'Main' (or 'main').
+     * Output statement: 'Console.Write [BLANK_3] (a [BLANK_4] b);' -> [BLANK_3] is 'Line' (for Console.WriteLine), [BLANK_4] is '+' (for addition).
+     * Semicolon required at end of statements.
+   - Python: Indentation semantics, 0-indexed slicing (start:end exclusive), integer division '//' vs float '/', 'def', 'self', 'return'.
+   - JavaScript / TypeScript: 'let', 'const', arrow functions, strict equality '===', template literals.
+   - C++: 'std::cout', 'std::cin', stream operators '<<' / '>>', pointers '*', references '&', semicolons.
+    - SQL:
+      * Clause order: 'SELECT [columns] FROM [table] WHERE [condition] GROUP BY [cols] HAVING [cond] ORDER BY [cols]'.
+      * Multi-column selection: multiple columns in the SELECT clause MUST be separated by commas (e.g. 'SELECT [BLANK_1] , [BLANK_2] FROM table').
+      * Table source: the table name is specified in the FROM clause (e.g. '[BLANK_3] orders').
+      * Fixed Code Invariant: Words already visible in the code template (such as 'id' or 'orders') are ALREADY part of the query. Do NOT repeat existing code tokens in the 'answers' array!
+2. Scope & Variable Tracking:
+   - Identify all declared variables and types in the code (e.g. 'String name = "James";' or 'int a = 5; int b = 10;').
+   - Ensure variables used in later expressions strictly match declared names and types.
 
 =======================================================
-=== PASS 3: SLOT BOUNDARY & CLEAN TOKEN ISOLATION ===
+=== PASS 2: MENTAL INTERPRETER & CODE SIMULATION ===
 =======================================================
-1. Slot Boundary Rules:
-   - NEVER repeat surrounding characters, semicolons, brackets, or parentheses that already exist outside the blanks in the template!
-   - Example 1: Template is 'static [BLANK_1] Sum(int a, int b)' -> Answer is strictly 'int'.
-   - Example 2: Template is 'int res = [BLANK_1] (a,b);' -> Answer is strictly 'Sum' (PascalCase).
-   - Example 3: Template is 'return [BLANK_1];' -> Answer is strictly 'result' (do NOT include ';' because ';' is already in the template).
-2. Choice & Reorder Bank Matching:
-   - If options/tokens are provided, your answers MUST match the exact casing and spelling of the available choices.
-   - For reordering questions: Output the complete ordered list of code lines from first to last.
+1. Trace execution step-by-step:
+   - Simulate line-by-line runtime execution with variables, string concatenation, arithmetic, and logic flow.
+   - For string concatenation (e.g. "Hello, " + name): verify resulting output matches the task objective (e.g. "Hello, James").
+   - For loops/conditions: trace boundary conditions, loop variables, termination, and output statements.
+   - For SQL queries: mentally reconstruct the complete query from the template + your proposed answers and verify it forms 100% syntactically valid and logically correct SQL.
+
+=======================================================
+=== PASS 3: WORD BANK & OPTION CHIP VALIDATION ===
+=======================================================
+1. Strict Word Bank Rule:
+   - If an "AVAILABLE CHOICES / WORD BANK" list is provided, EVERY answer token for blanks MUST be chosen from the provided word bank options.
+   - Do NOT invent new tokens or pick tokens outside the word bank if the word bank is provided.
+   - Ensure the casing and spelling match the word bank chip exactly (e.g. 'SELECT', 'FROM', ',', 'date').
+
+=======================================================
+=== PASS 4: EXACT SLOT COUNT & BOUNDARY SANITIZATION ===
+=======================================================
+1. Exact Slot Count Invariant:
+   - If TOTAL BLANKS/SLOTS TO FILL is N, your 'answers' array MUST contain EXACTLY N strings, one corresponding to each [BLANK_1]..[BLANK_N] in strict sequential order.
+   - NEVER put multiple slot answers into one slot.
+2. Punctuation Boundary Check:
+   - NEVER duplicate quotes, parentheses, brackets, commas, or semicolons that are already present outside the blank slot in the code template!
 
 =======================================================
 === REQUIRED OUTPUT JSON FORMAT ===
 =======================================================
 {
-  "thought": "Pass 1 (AST Analysis): ... \\nPass 2 (Mental Dry-Run Trace): ... \\nPass 3 (Slot Boundary Check): ...",
+  "thought": "Pass 1 (Scope & AST): ...\\nPass 2 (Mental Trace): ...\\nPass 3 (Word Bank Match): ...\\nPass 4 (Boundary Check): ...",
   "type": "fill_blanks" | "single_choice" | "multi_choice" | "reorder" | "general_question",
   "confidence": 1.0,
   "answers": [
-    // Array of exact strings for each blank or selected choice
+    // Array of exact strings matching each slot [BLANK_1]..[BLANK_N] or selected choices
   ],
   "explanation": "Clear, concise 1-2 sentence explanation of the solution."
 }`
   };
 
+  function safeFetch(url, options = {}) {
+    const gmRequest = (typeof GM_xmlhttpRequest === 'function')
+      ? GM_xmlhttpRequest
+      : ((typeof GM !== 'undefined' && typeof GM.xmlHttpRequest === 'function') ? GM.xmlHttpRequest : null);
+
+    if (gmRequest) {
+      return new Promise((resolve, reject) => {
+        gmRequest({
+          method: options.method || 'GET',
+          url: url,
+          headers: options.headers || {},
+          data: options.body || null,
+          timeout: 30000,
+          onload: (res) => {
+            resolve({
+              ok: res.status >= 200 && res.status < 300,
+              status: res.status,
+              statusText: res.statusText,
+              json: async () => {
+                try {
+                  return JSON.parse(res.responseText);
+                } catch (e) {
+                  return { error: { message: res.responseText || 'Invalid JSON' } };
+                }
+              },
+              text: async () => res.responseText
+            });
+          },
+          onerror: (err) => reject(new Error(err.statusText || 'Network error via GM_xmlhttpRequest')),
+          ontimeout: () => reject(new Error('Request timed out after 30s'))
+        });
+      });
+    }
+
+    return fetch(url, options);
+  }
+
+  function getTimeUntilUtcMidnight() {
+    const now = new Date();
+    const nextUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+    const diffMs = Math.max(0, nextUtc - now);
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m`;
+  }
+
   return {
-    DEFAULT_MODELS,
+    MISTRAL_MODELS,
+    GEMINI_MODELS,
+    HUGGINGFACE_MODELS,
+    DEFAULT_MODELS: MISTRAL_MODELS,
     DEFAULT_SETTINGS,
     STORAGE_KEY,
     Storage,
-    PROMPT_TEMPLATE
+    PROMPT_TEMPLATE,
+    safeFetch,
+    getTimeUntilUtcMidnight
   };
 });
 

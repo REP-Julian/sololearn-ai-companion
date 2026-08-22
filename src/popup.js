@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   modelSelect.appendChild(customOpt);
 
   apiKeyInput.value = settings.apiKey || '';
-  modelSelect.value = settings.selectedModel || 'anthropic/claude-3.7-sonnet';
+  modelSelect.value = settings.selectedModel || 'codestral-latest';
   customModelInput.value = settings.customModel || '';
 
   if (settings.selectedModel === 'custom') {
@@ -50,28 +50,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     settings.customModel = customModelInput.value.trim();
 
     await Config.Storage.save(settings);
-    showStatus('Settings saved successfully!', 'success');
+    showStatus('Mistral settings saved successfully!', 'success');
   });
 
   testBtn.addEventListener('click', async () => {
     const key = apiKeyInput.value.trim();
     if (!key) {
-      showStatus('Please enter an API key first.', 'error');
+      showStatus('Please enter your Mistral API key first.', 'error');
       return;
     }
 
-    showStatus('Testing connection...', '');
+    showStatus('Testing Mistral connection & verifying models...', '');
     try {
-      const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
-        headers: { Authorization: `Bearer ${key}` }
+      const res = await fetch('https://api.mistral.ai/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Accept': 'application/json'
+        }
       });
 
       if (res.ok) {
         const data = await res.json();
-        const label = data.data && data.data.label ? ` (${data.data.label})` : '';
-        showStatus(`Connected to OpenRouter!${label}`, 'success');
+        let available = [];
+        if (data && Array.isArray(data.data)) {
+          available = data.data
+            .map(m => m.id)
+            .filter(id => id && !/embed|moderation|ocr|audio|image|vision/i.test(id));
+        }
+        const hasCodestral = available.some(id => id.includes('codestral'));
+        showStatus(`✓ Connected! ${available.length} models ready (${hasCodestral ? 'Codestral Active' : available.slice(0, 2).join(', ')})`, 'success');
       } else {
-        showStatus(`Invalid Key: HTTP ${res.status}`, 'error');
+        showStatus(`Invalid Key: HTTP ${res.status} (Check console.mistral.ai)`, 'error');
       }
     } catch (e) {
       showStatus(`Connection error: ${e.message}`, 'error');

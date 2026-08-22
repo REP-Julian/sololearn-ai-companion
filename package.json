@@ -1,7 +1,7 @@
 {
   "name": "sololearn-ai-solver",
-  "version": "2.0.0",
-  "description": "Multi-AI consensus & 3-pass compiler solver for SoloLearn activities using OpenRouter free & active models.",
+  "version": "2.1.5",
+  "description": "Multi-Provider AI (Codestral, Gemini, Hugging Face) with Continuous Adaptive Learning & Self-Correction for SoloLearn activities.",
   "main": "src/main.js",
   "scripts": {
     "test": "node test/test_mock_cases.js",
@@ -10,9 +10,8 @@
   "keywords": [
     "sololearn",
     "ai-solver",
-    "openrouter",
-    "claude",
-    "gpt-4o",
+    "mistral",
+    "codestral",
     "automation",
     "userscript",
     "chrome-extension"

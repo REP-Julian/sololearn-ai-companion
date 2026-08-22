@@ -1,19 +1,23 @@
 /**
  * Unit Test Suite for SoloLearn AI Companion
- * Tests 3-Pass OpenRouter Response Cleaning, SoloLearn Internal React Inspector, and DOM Parser & Highlighter.
+ * Tests 3-Pass Mistral / Codestral Response Cleaning, SoloLearn Internal React Inspector, and DOM Parser & Highlighter.
  */
 
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
 
 const Config = require('../src/config.js');
-const OpenRouterClient = require('../src/openrouter.js');
+const SoloLearnMemory = require('../src/memory.js');
+const MistralClient = require('../src/mistral.js');
+const GeminiClient = require('../src/providers/gemini.js');
+const HuggingFaceClient = require('../src/providers/huggingface.js');
+const MultiProviderConsensusEngine = require('../src/consensus.js');
 
-console.log('--- RUNNING SOLOLEARN AI COMPANION 3-PASS & INTERNAL INSPECTOR TEST SUITE ---');
+console.log('--- RUNNING SOLOLEARN AI COMPANION MULTI-PROVIDER CONSENSUS TEST SUITE ---');
 
-// 1. Test OpenRouter 3-Pass Response Cleaning & Parsing
-console.log('\n[Test 1] 3-Pass JSON Cleaning & Boundary Sanitization');
-const client = new OpenRouterClient('mock-key');
+// 1. Test Mistral 3-Pass Response Cleaning & Parsing
+console.log('\n[Test 1] 3-Pass JSON Cleaning & Boundary Sanitization (Mistral AI)');
+const client = new MistralClient('mock-key');
 
 const json1 = '{"thought": "Pass 1 AST analysis: Python print function. Pass 2 Dry-run: print(\'Hello\'). Pass 3 Boundary check: exact match.", "type": "single_choice", "confidence": 0.99, "answers": ["print(\'Hello\')"], "explanation": "Python 3 print requires parentheses."}';
 assert.deepStrictEqual(client.cleanJsonResponse(json1), {
@@ -33,7 +37,7 @@ assert.deepStrictEqual(client.cleanJsonResponse(json2), {
   explanation: 'Standard while loop syntax.'
 }, 'Should strip markdown fences');
 
-console.log('✓ OpenRouter JSON cleaner passed all 3-pass cases.');
+console.log('✓ Mistral JSON cleaner passed all 3-pass cases.');
 
 // 2. Setup Mock DOM Environment
 const dom = new JSDOM(`
@@ -167,9 +171,9 @@ async function runAsyncTests() {
   assert.strictEqual(internalParsed.language, 'Python', 'Should extract language from React props');
   console.log('✓ Ground Truth extracted directly from SoloLearn React Fiber State!');
 
-  // Test 6: OpenRouter Solver with Ground Truth Payload
-  console.log('\n[Test 6] OpenRouterClient with Ground Truth Bypass');
-  const solverClient = new OpenRouterClient('mock-key');
+  // Test 6: Mistral Solver with Ground Truth Payload
+  console.log('\n[Test 6] MistralClient with Ground Truth Bypass');
+  const solverClient = new MistralClient('mock-key');
   const solveResult = await solverClient.solve(internalParsed);
   assert.strictEqual(solveResult.success, true);
   assert.strictEqual(solveResult.isInternalGroundTruth, true);
@@ -219,9 +223,1049 @@ async function runAsyncTests() {
   assert.strictEqual(stepBadges[4].textContent, 'Step 2', 'Opening curly brace should be Step 2');
   console.log('✓ Code rearrange task parsed and numbered with Step 1 -> Step 5 sequence badges!');
 
-  console.log('\n======================================================');
-  console.log('🎉 ALL 3-PASS, REACT INSPECTOR & REORDER TESTS PASSED! 🎉');
-  console.log('======================================================\n');
+  // Test 8: React Hooks Linked List Ground Truth Extraction
+  console.log('\n[Test 8] React Hooks Linked List Ground Truth Extraction');
+  const hooksDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div id="hook-root" data-test="quiz-container">
+      <h2>Functional Component Quiz</h2>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/javascript' });
+
+  global.window = hooksDom.window;
+  global.document = hooksDom.window.document;
+
+  const hookEl = hooksDom.window.document.getElementById('hook-root');
+  // Simulate React 18 functional component with a linked list of hooks
+  hookEl.__reactFiber$funcComp = {
+    memoizedProps: {},
+    memoizedState: {
+      memoizedState: null, // hook 1 (e.g. useState for count)
+      next: {
+        memoizedState: {
+          quiz: {
+            title: 'What does === check in JavaScript?',
+            type: 'single_choice',
+            correctAnswer: 'Strict equality (both value and type)',
+            language: 'JavaScript',
+            explanation: '=== checks both value and type without coercion.'
+          }
+        },
+        next: null
+      }
+    }
+  };
+
+  const hookParsed = Parser.parseQuestion();
+  assert.strictEqual(hookParsed.isInternalGroundTruth, true, 'Should detect ground truth inside React Hooks linked list');
+  assert.deepStrictEqual(hookParsed.answers, ['Strict equality (both value and type)']);
+  assert.strictEqual(hookParsed.language, 'JavaScript');
+  console.log('✓ React 18/19 Hooks linked list traversed and ground truth extracted!');
+
+  // Test 9: Auto-Fill on Inputs & Choices
+  console.log('\n[Test 9] In-Page Auto-Fill Execution');
+  const autoFillDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="quiz-container">
+      <input type="text" id="slot1" />
+      <input type="text" id="slot2" />
+    </div>
+  </body>
+  </html>
+  `);
+  global.window = autoFillDom.window;
+  global.document = autoFillDom.window.document;
+
+  const slot1 = autoFillDom.window.document.getElementById('slot1');
+  const slot2 = autoFillDom.window.document.getElementById('slot2');
+
+  const parsedInputs = {
+    type: 'fill_blanks',
+    inputElements: [slot1, slot2]
+  };
+  const aiAnswers = {
+    answers: ['const', '42']
+  };
+
+  const autoFillRes = Executor.autoFillAnswer(parsedInputs, aiAnswers);
+  assert.strictEqual(autoFillRes.success, true);
+  assert.strictEqual(slot1.value, 'const');
+  assert.strictEqual(slot2.value, '42');
+  console.log('✓ In-page Auto-Fill populated input values with React event triggers!');
+
+  // Test 10: Codestral / Mistral Caching
+  console.log('\n[Test 10] Codestral / Mistral Query Caching');
+  const cacheClient = new MistralClient('mock-key');
+  const qPayload = {
+    type: 'fill_blanks',
+    title: 'Fill loop syntax',
+    code: 'for (int i=0; i<10; i++)',
+    blankCount: 1,
+    options: ['for']
+  };
+  const mockSolved = {
+    success: true,
+    data: {
+      type: 'fill_blanks',
+      answers: ['for'],
+      explanation: 'For loop syntax.'
+    },
+    model: 'codestral-latest',
+    latencyMs: 350
+  };
+
+  const cKey = cacheClient.getCacheKey(qPayload, 'codestral-latest');
+  cacheClient.cache.set(cKey, mockSolved);
+
+  const cachedResult = await cacheClient.solve(qPayload, 'codestral-latest');
+  assert.strictEqual(cachedResult.isCached, true, 'Should return cached result');
+  assert.strictEqual(cachedResult.latencyMs, 1, 'Cached latency should be instant (1ms)');
+  console.log('✓ Codestral caching delivered instant (<5ms) answer recall!');
+
+  // Test 11: End-to-End SoloLearnCompanionController Execution (Verify isGroundTruth & variables)
+  console.log('\n[Test 11] SoloLearnCompanionController End-to-End Execution');
+  const fullDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div id="root">
+      <div data-test="lesson-content">
+        <h2 data-test="quiz-title">Choose the right keyword</h2>
+        <div class="choices">
+          <button data-test="quiz-option">public</button>
+          <button data-test="quiz-option">private</button>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/c-sharp' });
+
+  global.window = fullDom.window;
+  global.document = fullDom.window.document;
+  global.window.SoloLearnConfig = Config;
+  global.window.MistralClient = MistralClient;
+  global.window.SoloLearnParser = Parser;
+  global.window.SoloLearnExecutor = Executor;
+  global.window.SoloLearnUI = require('../src/ui.js');
+
+  const SoloLearnCompanionController = require('../src/main.js');
+  const controller = new SoloLearnCompanionController();
+  await controller.init();
+
+  // Attach ground truth to root element
+  const lessonEl = fullDom.window.document.querySelector('[data-test="lesson-content"]');
+  lessonEl.__reactFiber$root = {
+    memoizedProps: {
+      quiz: {
+        title: 'Choose the right keyword',
+        type: 'single_choice',
+        correctAnswer: 'public',
+        language: 'C# (.NET)'
+      }
+    }
+  };
+
+  // Run handleScanAndReveal - ensures no 'isGroundTruth is not defined' ReferenceError!
+  await controller.handleScanAndReveal();
+
+  const companionAns = fullDom.window.document.getElementById('sl-companion-answer');
+  assert.strictEqual(companionAns.innerText, 'public', 'Companion card should display ground truth answer');
+  console.log('✓ Controller handleScanAndReveal executed successfully with Ground Truth!');
+
+  // Test handleAutoFill
+  await controller.handleAutoFill();
+  console.log('✓ Controller handleAutoFill executed successfully!');
+
+  // Test 12: Multi-Slot Fill-In-The-Blanks with Word Bank Chips (Screenshot Scenario)
+  console.log('\n[Test 12] Multi-Slot Fill-In-The-Blanks with Word Bank Chips');
+  const multiBlankDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="instruction">Fill in the blanks to output "Hello, " followed by the value stored in the name variable.</div>
+      <div class="code-container" data-test="code-snippet">
+        <div>String name = "James";</div>
+        <div>String msg <span class="drop-slot" data-test="drop-target"></span> "+ <span class="drop-slot" data-test="drop-target"></span> ;</div>
+        <div>System.out.println( <span class="drop-slot" data-test="drop-target"></span> );</div>
+      </div>
+      <div class="word-bank">
+        <button class="word-chip" data-test="choice-item">msg</button>
+        <button class="word-chip" data-test="choice-item">var</button>
+        <button class="word-chip" data-test="choice-item">String</button>
+        <button class="word-chip" data-test="choice-item">int</button>
+        <button class="word-chip" data-test="choice-item">println</button>
+        <button class="word-chip" data-test="choice-item">Hello,</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/java' });
+
+  global.window = multiBlankDom.window;
+  global.document = multiBlankDom.window.document;
+
+  const parsedMulti = Parser.parseQuestion();
+  assert.strictEqual(parsedMulti.type, 'fill_blanks', 'Should classify as fill_blanks, NOT reorder');
+  assert.strictEqual(parsedMulti.blankCount, 3, 'Should identify all 3 blank drop slots');
+  assert.strictEqual(parsedMulti.inputElements.length, 3, 'Should extract 3 drop slot DOM elements');
+  assert.strictEqual(parsedMulti.options.length, 6, 'Should extract all 6 word bank chips');
+
+  // Test Multi-Slot Highlighting
+  const mockAiMultiAnswer = {
+    type: 'fill_blanks',
+    answers: ['=', 'Hello,', 'msg']
+  };
+
+  const multiHighlightRes = Executor.highlightAnswerOnPage(parsedMulti, mockAiMultiAnswer);
+  assert.strictEqual(multiHighlightRes.success, true);
+
+  // Assert drop slots received badges #1, #2, #3
+  const slotBadges = multiBlankDom.window.document.querySelectorAll('.drop-slot .sl-ai-badge');
+  assert.strictEqual(slotBadges.length, 3, 'All 3 drop slots should have #1, #2, #3 badges');
+  assert.strictEqual(slotBadges[0].textContent, '#1: =');
+  assert.strictEqual(slotBadges[1].textContent, '#2: Hello,');
+  assert.strictEqual(slotBadges[2].textContent, '#3: msg');
+
+  // Assert matching word bank chips received Slot # badges
+  const chipBadges = multiBlankDom.window.document.querySelectorAll('.word-chip .sl-ai-order-badge');
+  assert.strictEqual(chipBadges.length, 2, 'Matching word bank chips (Hello,, msg) should have Slot # badges');
+  console.log('✓ Multi-Slot Fill-In-The-Blanks with Word Bank chips parsed and highlighted perfectly!');
+
+  // Test 13: MistralClient queryModel Prompt Construction & Execution (No 'language is not defined' error)
+  console.log('\n[Test 13] MistralClient.queryModel Execution & Prompt Formulation');
+  const mockFetchResponse = {
+    ok: true,
+    status: 200,
+    json: async () => ({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            thought: 'Pass 1: Java string concat. Pass 2: variable evaluation. Pass 3: slot isolation.',
+            type: 'fill_blanks',
+            confidence: 1.0,
+            answers: ['=', 'Hello,', 'msg'],
+            explanation: 'Concatenate Hello, with name and pass to println.'
+          })
+        }
+      }],
+      usage: { prompt_tokens: 180, completion_tokens: 45, total_tokens: 225 }
+    })
+  };
+
+  const originalFetch = global.fetch;
+  global.fetch = async (url, opts) => {
+    assert.strictEqual(url, 'https://api.mistral.ai/v1/chat/completions');
+    const body = JSON.parse(opts.body);
+    assert.strictEqual(body.model, 'codestral-latest');
+    assert.ok(body.messages[1].content.includes('TARGET PROGRAMMING LANGUAGE: Java'));
+    assert.ok(body.messages[1].content.includes('TOTAL BLANKS/SLOTS TO FILL: 3'));
+    return mockFetchResponse;
+  };
+
+  const client13 = new MistralClient('valid-mistral-key');
+  const q13 = {
+    type: 'fill_blanks',
+    language: 'Java',
+    title: 'Fill in the blanks to output Hello, followed by name',
+    code: 'String msg [BLANK_1] "+ [BLANK_2] ;\nSystem.out.println( [BLANK_3] );',
+    blankCount: 3,
+    options: ['msg', 'var', 'String', 'int', 'println', 'Hello,']
+  };
+
+  const res13 = await client13.queryModel(q13, 'codestral-latest');
+  assert.strictEqual(res13.success, true);
+  assert.deepStrictEqual(res13.data.answers, ['=', 'Hello,', 'msg']);
+  console.log('✓ MistralClient queryModel executed cleanly with 0 variable reference errors!');
+
+  // Test 14: Conceptual Multiple-Choice Questions without Code Snippets
+  console.log('\n[Test 14] Conceptual Multiple-Choice Questions without Code Snippets');
+  const commentDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <h2 data-test="quiz-title">Which of the following is a valid comment?</h2>
+      <div class="choices">
+        <button data-test="choice-item">## some text</button>
+        <button data-test="choice-item">** some text **</button>
+        <button data-test="choice-item">/* some text */</button>
+        <button data-test="choice-item">*/ some text /*</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/java' });
+
+  global.window = commentDom.window;
+  global.document = commentDom.window.document;
+
+  const parsedCommentQ = Parser.parseQuestion();
+  assert.strictEqual(parsedCommentQ.type, 'single_choice');
+  assert.strictEqual(parsedCommentQ.title, 'Which of the following is a valid comment?');
+  assert.strictEqual(parsedCommentQ.options.length, 4);
+
+  global.fetch = async (url, opts) => {
+    const body = JSON.parse(opts.body);
+    assert.strictEqual(body.messages[1].content.includes('EXERCISE TYPE: Conceptual / Language Syntax Question'), true);
+    assert.strictEqual(body.messages[1].content.includes('/* some text */'), true);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              thought: 'Pass 1: Java multi-line comment syntax is /* text */. Pass 2: Evaluate options. Pass 3: Select /* some text */.',
+              type: 'single_choice',
+              confidence: 1.0,
+              answers: ['/* some text */'],
+              explanation: 'In Java, multi-line comments are enclosed between /* and */.'
+            })
+          }
+        }],
+        usage: { prompt_tokens: 120, completion_tokens: 35, total_tokens: 155 }
+      })
+    };
+  };
+
+  const res14 = await client13.queryModel(parsedCommentQ, 'codestral-latest');
+  assert.strictEqual(res14.success, true);
+  assert.deepStrictEqual(res14.data.answers, ['/* some text */']);
+  console.log('✓ Conceptual Multiple-Choice question solved flawlessly with 0 code errors!');
+
+  // Test 14b: Mistral Token Exhaustion / 429 Rate Limit Fallback across Text-out models
+  console.log('\n[Test 14b] MistralClient Token Exhaustion / 429 Quota Fallback across Text-Out Models');
+  const queriedMistralModels = [];
+  global.fetch = async (url, opts) => {
+    const body = JSON.parse(opts.body);
+    queriedMistralModels.push(body.model);
+    if (body.model === 'codestral-latest' || body.model === 'mistral-small-latest') {
+      // Simulate 429 Rate Limit / Out of tokens for primary exhausted models
+      return {
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+        json: async () => ({
+          message: 'Rate limit reached: daily token allowance exhausted.'
+        })
+      };
+    }
+    // Fallback model (open-mistral-nemo / ministral-8b-latest) succeeds
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              thought: 'Fallback Mistral text-out model AST trace',
+              type: 'single_choice',
+              confidence: 1.0,
+              answers: ['/* some text */'],
+              explanation: 'Solved via fallback Text-out Mistral model.'
+            })
+          }
+        }],
+        usage: { prompt_tokens: 100, completion_tokens: 25, total_tokens: 125 }
+      })
+    };
+  };
+
+  const mistralFallbackRes = await client13.queryModel(parsedCommentQ, 'codestral-latest');
+  assert.strictEqual(mistralFallbackRes.success, true, 'Should successfully fall back when primary model is out of tokens');
+  assert.deepStrictEqual(mistralFallbackRes.data.answers, ['/* some text */']);
+  assert.ok(queriedMistralModels.length > 1, 'Should have queried fallback Mistral models');
+  console.log(`✓ MistralClient seamlessly fell back from exhausted model to working text-out model (${mistralFallbackRes.model})!`);
+
+  // Test 15: GeminiClient Google AI Studio Query & Verification
+  console.log('\n[Test 15] GeminiClient Google AI Studio Model Query & Verification');
+  const geminiClient = new GeminiClient('AIzaSy_mock_key');
+  global.fetch = async (url, opts) => {
+    assert.ok(url.includes('generativelanguage.googleapis.com'));
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                thought: 'Gemini AST trace: select /* some text */',
+                type: 'single_choice',
+                confidence: 1.0,
+                answers: ['/* some text */'],
+                explanation: 'Standard comment syntax.'
+              })
+            }]
+          }
+        }]
+      })
+    };
+  };
+
+  const geminiRes = await geminiClient.queryModel(parsedCommentQ, 'gemini-3.7-flash');
+  if (!geminiRes.success) console.error('Gemini test error:', geminiRes.error);
+  assert.strictEqual(geminiRes.success, true);
+  assert.deepStrictEqual(geminiRes.data.answers, ['/* some text */']);
+  console.log('✓ GeminiClient returned valid answers from Google AI Studio!');
+
+  // Test 15b: Gemini Token Exhaustion / 429 Quota Fallback across Text-out models
+  console.log('\n[Test 15b] GeminiClient Token Exhaustion / 429 Quota Fallback across Text-Out Models');
+  const queriedGeminiUrls = [];
+  global.fetch = async (url) => {
+    queriedGeminiUrls.push(url);
+    if (url.includes('gemini-3.6-flash') || url.includes('gemini-3.5-flash')) {
+      // Simulate 429 Quota Exceeded for exhausted models (as shown in user screenshot)
+      return {
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+        json: async () => ({
+          error: { code: 429, message: 'Resource has been exhausted (e.g. check quota).' }
+        })
+      };
+    }
+    // Fallback to high quota text-out model (e.g. gemini-3.5-flash-lite / gemini-3.7-flash) succeeds!
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                thought: 'Fallback Text-Out Gemini model AST trace',
+                type: 'single_choice',
+                confidence: 1.0,
+                answers: ['/* some text */'],
+                explanation: 'Successfully solved via fallback Text-out model.'
+              })
+            }]
+          }
+        }]
+      })
+    };
+  };
+
+  const geminiFallbackRes = await geminiClient.queryModel(parsedCommentQ, 'gemini-3.6-flash');
+  assert.strictEqual(geminiFallbackRes.success, true, 'Should successfully fall back when primary model is out of tokens');
+  assert.deepStrictEqual(geminiFallbackRes.data.answers, ['/* some text */']);
+  assert.ok(queriedGeminiUrls.length > 1, 'Should have queried fallback models');
+  console.log(`✓ GeminiClient seamlessly fell back from exhausted model to working text-out model (${geminiFallbackRes.model})!`);
+
+  // Test 16: HuggingFaceClient Query & Verification
+  console.log('\n[Test 16] HuggingFaceClient Model Query & Verification');
+  const hfClient = new HuggingFaceClient('hf_mock_key');
+  global.fetch = async (url, opts) => {
+    assert.ok(url.includes('huggingface.co'));
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              thought: 'Qwen Coder AST trace: comment matching',
+              type: 'single_choice',
+              confidence: 1.0,
+              answers: ['/* some text */'],
+              explanation: 'C-family multiline comment.'
+            })
+          }
+        }],
+        usage: { total_tokens: 150 }
+      })
+    };
+  };
+
+  const hfRes = await hfClient.queryModel(parsedCommentQ, 'Qwen/Qwen2.5-Coder-32B-Instruct');
+  if (!hfRes.success) console.error('Hugging Face test error:', hfRes.error);
+  assert.strictEqual(hfRes.success, true);
+  assert.deepStrictEqual(hfRes.data.answers, ['/* some text */']);
+  console.log('✓ HuggingFaceClient returned valid answers from Qwen 2.5 Coder 32B!');
+
+  // Test 17: MultiProviderConsensusEngine 3/3 Unanimous Agreement (Mistral + Gemini + Hugging Face)
+  console.log('\n[Test 17] MultiProviderConsensusEngine 3/3 Unanimous Voting Race (Mistral + Gemini + Hugging Face)');
+  const consensusEngine = new MultiProviderConsensusEngine({
+    mistralApiKey: 'mistral-key',
+    geminiApiKey: 'AIzaSy-key',
+    huggingfaceApiKey: 'hf_key',
+    consensusMode: true
+  });
+
+  global.fetch = async (url) => {
+    let ans = ['/* some text */'];
+    let providerName = 'Mistral';
+    if (url.includes('googleapis')) {
+      providerName = 'Gemini';
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{
+            content: {
+              parts: [{
+                text: JSON.stringify({
+                  thought: 'Gemini reasoning',
+                  type: 'single_choice',
+                  confidence: 1.0,
+                  answers: ans,
+                  explanation: 'Gemini explanation.'
+                })
+              }]
+            }
+          }]
+        })
+      };
+    }
+    if (url.includes('huggingface')) providerName = 'Hugging Face';
+
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              thought: `${providerName} reasoning`,
+              type: 'single_choice',
+              confidence: 1.0,
+              answers: ans,
+              explanation: `${providerName} explanation.`
+            })
+          }
+        }],
+        usage: { total_tokens: 120 }
+      })
+    };
+  };
+
+  const unanimousRes = await consensusEngine.solve(parsedCommentQ, { consensusMode: true });
+  assert.strictEqual(unanimousRes.success, true);
+  assert.strictEqual(unanimousRes.hasConsensus, true);
+  assert.strictEqual(unanimousRes.isUnanimous, true);
+  assert.strictEqual(unanimousRes.isGoldenMatch, true);
+  assert.strictEqual(unanimousRes.votes, 3);
+  assert.strictEqual(unanimousRes.totalProviders, 3);
+  assert.deepStrictEqual(unanimousRes.data.answers, ['/* some text */']);
+  assert.ok(unanimousRes.consensusLabel.includes('GOLDEN MATCH'));
+  console.log('✓ 3/3 Unanimous Golden Match evaluated correctly across Mistral + Google AI Studio + Hugging Face!');
+
+  // Test 18: MultiProviderConsensusEngine 2/3 Majority Voting (1 Disagreeing Model)
+  console.log('\n[Test 18] MultiProviderConsensusEngine 2/3 Majority Voting');
+  consensusEngine.clearCache();
+
+  global.fetch = async (url) => {
+    if (url.includes('googleapis')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{
+            content: {
+              parts: [{
+                text: JSON.stringify({
+                  thought: 'Gemini reasoning',
+                  type: 'single_choice',
+                  confidence: 1.0,
+                  answers: ['/* some text */'], // Gemini agrees with Mistral
+                  explanation: 'Gemini explanation.'
+                })
+              }]
+            }
+          }]
+        })
+      };
+    }
+
+    let ans = ['/* some text */'];
+    let provider = 'Mistral';
+    if (url.includes('huggingface')) {
+      provider = 'Hugging Face';
+      ans = ['## some text']; // Hugging Face returned wrong answer
+    }
+
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              thought: `${provider} reasoning`,
+              type: 'single_choice',
+              confidence: 1.0,
+              answers: ans,
+              explanation: `${provider} explanation.`
+            })
+          }
+        }],
+        usage: { total_tokens: 120 }
+      })
+    };
+  };
+
+  const majorityRes = await consensusEngine.solve(parsedCommentQ, { consensusMode: true });
+  assert.strictEqual(majorityRes.success, true);
+  assert.strictEqual(majorityRes.hasConsensus, true);
+  assert.strictEqual(majorityRes.isGoldenMatch, true);
+  assert.strictEqual(majorityRes.votes, 2);
+  assert.strictEqual(majorityRes.totalProviders, 3);
+  assert.deepStrictEqual(majorityRes.data.answers, ['/* some text */']);
+  assert.ok(majorityRes.consensusLabel.includes('MAJORITY GOLDEN MATCH'));
+  console.log('✓ 2/3 Majority Voting correctly isolated winner and discarded disagreeing model!');
+
+  // Test 19: Single Provider Auto-Expansion to 3-Model Intra-Provider Race (Hugging Face Key)
+  console.log('\n[Test 19] Single-Provider Auto-Expansion to 3-Model Race (Only Hugging Face Token)');
+  const singleProviderEngine = new MultiProviderConsensusEngine({
+    huggingfaceApiKey: 'hf_key_only'
+  });
+
+  const queriedModels = [];
+  global.fetch = async (url, opts) => {
+    const body = JSON.parse(opts.body);
+    queriedModels.push(body.model);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              thought: `${body.model} reasoning`,
+              type: 'single_choice',
+              confidence: 1.0,
+              answers: ['/* some text */'],
+              explanation: 'Valid comment.'
+            })
+          }
+        }],
+        usage: { total_tokens: 110 }
+      })
+    };
+  };
+
+  const singleProviderRes = await singleProviderEngine.solve(parsedCommentQ);
+  assert.strictEqual(singleProviderRes.success, true);
+  assert.strictEqual(singleProviderRes.hasConsensus, true);
+  assert.strictEqual(singleProviderRes.isGoldenMatch, true);
+  assert.strictEqual(queriedModels.length, 3, 'Should automatically spawn 3 distinct models within Hugging Face');
+  assert.ok(queriedModels.includes('Qwen/Qwen2.5-Coder-32B-Instruct'));
+  assert.ok(queriedModels.includes('meta-llama/Llama-3.3-70B-Instruct'));
+  assert.ok(queriedModels.includes('deepseek-ai/DeepSeek-R1-Distill-Qwen-32B'));
+  console.log('✓ Single Provider automatically commanded 3 distinct Hugging Face models (Qwen 2.5 Coder + Llama 3.3 + DeepSeek R1) in parallel!');
+
+  // Test 20: Automatic Consensus Re-Scan on Disagreement
+  console.log('\n[Test 20] Automatic Consensus Re-scan on Disagreement');
+  consensusEngine.clearCache();
+  let runCount = 0;
+  global.fetch = async (url, opts) => {
+    runCount++;
+    // On pass 1 (runs 1, 2, 3): create a 3-way tie / disagreement
+    // On pass 2 (runs 4, 5, 6): models re-evaluate and agree on '/* some text */'
+    let ans = ['/* some text */'];
+    if (runCount === 1) ans = ['## some text'];
+    if (runCount === 2) ans = ['** some text **'];
+    if (runCount === 3) ans = ['*/ some text /*'];
+
+    if (url.includes('googleapis')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: JSON.stringify({ thought: 'Gemini', type: 'single_choice', confidence: 1.0, answers: ans, explanation: 'Gemini.' }) }] } }]
+        })
+      };
+    }
+
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{ message: { content: JSON.stringify({ thought: 'AI', type: 'single_choice', confidence: 1.0, answers: ans, explanation: 'AI exp.' }) } }]
+      })
+    };
+  };
+
+  const reScanRes = await consensusEngine.solve(parsedCommentQ, { consensusMode: true });
+  assert.strictEqual(reScanRes.success, true);
+  assert.strictEqual(reScanRes.hasConsensus, true);
+  assert.deepStrictEqual(reScanRes.data.answers, ['/* some text */']);
+  assert.ok(runCount > 3, 'Should have automatically triggered a re-scan pass on disagreement');
+  console.log('✓ Automatic Consensus Re-scan triggered on disagreement and reached unanimous consensus!');
+
+  // Test 21: Match the term with the definition (Screenshot Scenario - 3-Slot Drag & Drop)
+  console.log('\n[Test 21] Term-to-Definition Multi-Slot Matching (Screenshot Scenario)');
+  const matchingDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="instruction">Match the term with the definition</div>
+      <div class="definition-row">
+        <span>Error in code:</span>
+        <span class="drop-slot" data-test="drop-target"></span>
+      </div>
+      <div class="definition-row">
+        <span>Information request:</span>
+        <span class="drop-slot" data-test="drop-target"></span>
+      </div>
+      <div class="definition-row">
+        <span>Visual representation of a database:</span>
+        <span class="drop-slot" data-test="drop-target"></span>
+      </div>
+      <div class="word-bank">
+        <button class="word-chip" data-test="choice-item">query</button>
+        <button class="word-chip" data-test="choice-item">bug</button>
+        <button class="word-chip" data-test="choice-item">schema</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/sql-introduction' });
+
+  global.window = matchingDom.window;
+  global.document = matchingDom.window.document;
+
+  const parsedMatching = Parser.parseQuestion();
+  assert.strictEqual(parsedMatching.type, 'fill_blanks', 'Should classify definition matching as fill_blanks');
+  assert.strictEqual(parsedMatching.language, 'SQL', 'Should accurately detect SQL course domain');
+  assert.strictEqual(parsedMatching.blankCount, 3, 'Should identify exactly 3 definition drop slots');
+  assert.strictEqual(parsedMatching.inputElements.length, 3, 'Should extract all 3 drop target DOM elements');
+  assert.ok(parsedMatching.code.includes('Error in code: [BLANK_1]'), 'Should include definition line 1 with BLANK_1');
+  assert.ok(parsedMatching.code.includes('Information request: [BLANK_2]'), 'Should include definition line 2 with BLANK_2');
+  assert.ok(parsedMatching.code.includes('Visual representation of a database: [BLANK_3]'), 'Should include definition line 3 with BLANK_3');
+  assert.strictEqual(parsedMatching.options.length, 3, 'Should extract all 3 word bank chips');
+
+  // Test Visual Highlighting for all 3 matching pairs
+  const mockMatchingAnswer = {
+    type: 'fill_blanks',
+    answers: ['bug', 'query', 'schema'],
+    explanation: 'A bug is an error in code, a query is an information request, and a schema is the visual representation of a database.'
+  };
+
+  const matchingHighlightRes = Executor.highlightAnswerOnPage(parsedMatching, mockMatchingAnswer);
+  assert.strictEqual(matchingHighlightRes.success, true);
+
+  const matchingSlotBadges = matchingDom.window.document.querySelectorAll('.drop-slot .sl-ai-badge');
+  assert.strictEqual(matchingSlotBadges.length, 3, 'All 3 drop slots should have #1, #2, #3 badges');
+  assert.strictEqual(matchingSlotBadges[0].textContent, '#1: bug');
+  assert.strictEqual(matchingSlotBadges[1].textContent, '#2: query');
+  assert.strictEqual(matchingSlotBadges[2].textContent, '#3: schema');
+
+  const matchingChipBadges = matchingDom.window.document.querySelectorAll('.word-chip .sl-ai-order-badge');
+  assert.strictEqual(matchingChipBadges.length, 3, 'All 3 word bank chips (bug, query, schema) should have Slot # badges');
+  console.log('✓ Definition matching 3-slot question parsed, language-detected, and highlighted with 100% precision!');
+
+  // Test 22: Multi-Slot SQL Query Reading & Sequential Word-Bank Auto-Fill (Screenshot Scenario)
+  console.log('\n[Test 22] Multi-Slot SQL Query Code Reading & Sequential Auto-Fill (Complete the SQL Query)');
+  const sqlQueryDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="instruction">Complete the SQL query</div>
+      <div class="code-container" data-test="code-snippet">
+        <div class="code-line">
+          <span class="drop-slot" data-test="drop-target"></span>
+          <span>id</span>
+          <span class="drop-slot" data-test="drop-target"></span>
+          <span class="drop-slot" data-test="drop-target"></span>
+        </div>
+        <div class="code-line">
+          <span class="drop-slot" data-test="drop-target"></span>
+          <span>orders</span>
+        </div>
+      </div>
+      <div class="word-bank">
+        <button class="word-chip" data-test="choice-item">FROM</button>
+        <button class="word-chip" data-test="choice-item">,</button>
+        <button class="word-chip" data-test="choice-item">SELECT</button>
+        <button class="word-chip" data-test="choice-item">date</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/sql-introduction' });
+
+  global.window = sqlQueryDom.window;
+  global.document = sqlQueryDom.window.document;
+
+  const parsedSql = Parser.parseQuestion();
+  assert.strictEqual(parsedSql.type, 'fill_blanks');
+  assert.strictEqual(parsedSql.language, 'SQL');
+  assert.strictEqual(parsedSql.blankCount, 4, 'Should extract all 4 blank slots');
+  assert.strictEqual(parsedSql.inputElements.length, 4, 'Should have 4 inputElements');
+  console.log('DEBUG PARSED SQL CODE:', JSON.stringify(parsedSql.code));
+  assert.ok(parsedSql.code.includes('[BLANK_1]'), 'Must include BLANK_1');
+  assert.ok(parsedSql.code.includes('[BLANK_4]'), 'Must include BLANK_4');
+  assert.strictEqual(parsedSql.options.length, 4, 'Should extract 4 word bank chips');
+
+  // Test Multi-Provider Consensus on Word-Bank Compliance
+  const mockSqlEngine = new MultiProviderConsensusEngine({
+    mistralApiKey: 'mistral-key',
+    geminiApiKey: 'gemini-key',
+    huggingfaceApiKey: 'hf-key',
+    consensusMode: true
+  });
+
+  global.fetch = async (url) => {
+    // Gemini returns 100% compliant word bank answer
+    if (url.includes('googleapis')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: JSON.stringify({ thought: 'Gemini SQL', type: 'fill_blanks', confidence: 1.0, answers: ['SELECT', ',', 'date', 'FROM'], explanation: 'SELECT id, date FROM orders' }) }] } }]
+        })
+      };
+    }
+    // Mistral returns invalid word not in word bank
+    if (url.includes('mistral')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: JSON.stringify({ thought: 'Mistral SQL', type: 'fill_blanks', confidence: 1.0, answers: ['SELECT', 'FROM', ',', 'orders'], explanation: 'SQL' }) } }]
+        })
+      };
+    }
+    // Hugging face returns invalid word not in word bank
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{ message: { content: JSON.stringify({ thought: 'HF SQL', type: 'fill_blanks', confidence: 1.0, answers: ['SELECT', 'id', 'FROM', 'orders'], explanation: 'SQL' }) } }]
+      })
+    };
+  };
+
+  const sqlConsensusRes = await mockSqlEngine.solve(parsedSql, { consensusMode: true });
+  assert.strictEqual(sqlConsensusRes.success, true);
+  assert.deepStrictEqual(sqlConsensusRes.data.answers, ['SELECT', ',', 'date', 'FROM'], 'Consensus Engine must pick 100% word-bank compliant Gemini winner!');
+
+  // Test Auto-Fill on SQL drop slots
+  const sqlAutoFillRes = Executor.autoFillAnswer(parsedSql, sqlConsensusRes.data);
+  assert.strictEqual(sqlAutoFillRes.success, true);
+  console.log('✓ Multi-Slot SQL Query parsed in reading order, consensus resolved to 100% compliant solution, and auto-filled!');
+
+  // Test 23: SoloLearnMemoryEngine Signature Generation & Pre-Seeded Knowledge Adaptation
+  console.log('\n[Test 23] SoloLearnMemoryEngine Signature Generation & Pre-Seeded Knowledge Adaptation');
+  const memoryEngine = new SoloLearnMemory();
+  const preSeededQ = {
+    title: 'What is the output of the following C# code?',
+    code: 'int x = 5;\nint y = 10;\nConsole.WriteLine(x + y);',
+    type: 'single_choice'
+  };
+  const preSeededRecord = memoryEngine.get(preSeededQ);
+  assert.notStrictEqual(preSeededRecord, null, 'Must retrieve pre-seeded historical question');
+  assert.deepStrictEqual(preSeededRecord.answers, ['15'], 'Pre-seeded answer must be 15');
+  assert.strictEqual(preSeededRecord.status, 'mastered');
+  const stats = memoryEngine.getStats();
+  assert.ok(stats.total >= 8, 'Must have at least 8 pre-seeded historical benchmark records');
+  console.log(`✓ Pre-seeded Knowledge Bank loaded with ${stats.total} historical benchmark solutions (${stats.mastered} mastered)!`);
+
+  // Test 24: Memory Learn Correct & 0ms Instant Retrieval
+  console.log('\n[Test 24] Memory Learn Correct & 0ms Instant Retrieval');
+  const dynamicQ = {
+    title: 'Which method starts a thread in Java?',
+    type: 'single_choice',
+    language: 'Java',
+    options: ['start()', 'run()', 'init()']
+  };
+  memoryEngine.learnCorrect(dynamicQ, ['start()'], 'test_verification');
+  const dynamicLearned = memoryEngine.get(dynamicQ);
+  assert.notStrictEqual(dynamicLearned, null);
+  assert.deepStrictEqual(dynamicLearned.answers, ['start()']);
+  assert.strictEqual(dynamicLearned.status, 'mastered');
+
+  // Verify ConsensusEngine zero-token recall
+  const consensusWithMem = new MultiProviderConsensusEngine();
+  consensusWithMem.memory = memoryEngine;
+  const memorySolveRes = await consensusWithMem.solve(dynamicQ);
+  assert.strictEqual(memorySolveRes.success, true);
+  assert.strictEqual(memorySolveRes.isLearnedMemory, true);
+  assert.strictEqual(memorySolveRes.latencyMs, 1);
+  assert.deepStrictEqual(memorySolveRes.data.answers, ['start()']);
+  console.log('✓ Verified correct answer adapted into memory and recalled instantly with 0 tokens (1ms)!');
+
+  // Test 25: Memory Learn from Mistake (Mistake Analysis & Self-Correction Reflection)
+  console.log('\n[Test 25] Memory Learn from Mistake (Mistake Analysis & Self-Correction)');
+  const mistakeQ = {
+    title: 'What does SQL HAVING clause do?',
+    type: 'single_choice',
+    language: 'SQL',
+    options: ['Filters groups after GROUP BY', 'Filters rows before GROUP BY', 'Sorts results']
+  };
+
+  // Initially an erroneous choice was made
+  const wrongAns = ['Filters rows before GROUP BY'];
+  const rightAns = ['Filters groups after GROUP BY'];
+
+  const correctionRecord = memoryEngine.learnMistake(mistakeQ, wrongAns, rightAns, 'test_feedback');
+  assert.strictEqual(correctionRecord.status, 'corrected');
+  assert.deepStrictEqual(correctionRecord.answers, rightAns);
+  assert.ok(correctionRecord.reflection.includes('Acknowledged mistake on "Filters rows before GROUP BY"'), 'Reflection must acknowledge mistake');
+  assert.ok(correctionRecord.reflection.includes('adapted memory to "Filters groups after GROUP BY"'), 'Reflection must show right choice');
+
+  // Verify memory immediately serves the corrected right answer in future encounters
+  const correctedSolveRes = await consensusWithMem.solve(mistakeQ);
+  assert.strictEqual(correctedSolveRes.success, true);
+  assert.strictEqual(correctedSolveRes.isLearnedMemory, true);
+  assert.strictEqual(correctedSolveRes.isCorrected, true);
+  assert.deepStrictEqual(correctedSolveRes.data.answers, rightAns);
+  console.log('✓ Mistake analyzed, acknowledged, and self-corrected into memory. Fearlessly gives the right answer!');
+
+  // Test 26: SoloLearnFeedbackDetector Post-Submission Success Detection
+  console.log('\n[Test 26] SoloLearnFeedbackDetector Post-Submission Success Detection');
+  const successDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="lesson-feedback-success" class="banner-success">
+        <span>Correct! Great job!</span>
+        <button data-test="continue-button">Continue</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `);
+  const successFeedback = Parser.FeedbackDetector.detectSubmissionResult(successDom.window.document);
+  assert.notStrictEqual(successFeedback, null);
+  assert.strictEqual(successFeedback.isSubmitted, true);
+  assert.strictEqual(successFeedback.isCorrect, true);
+  console.log('✓ SoloLearn post-submission success feedback banner detected accurately!');
+
+  // Test 27: SoloLearnFeedbackDetector Post-Submission Failure Detection & Revealed Correct Answer
+  console.log('\n[Test 27] SoloLearnFeedbackDetector Post-Submission Failure Detection & Answer Extraction');
+  const failureDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="lesson-feedback-error" class="banner-error">
+        <span>Not quite. Correct answer is: True</span>
+        <button data-test="try-again-button">Try Again</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `);
+  const failureFeedback = Parser.FeedbackDetector.detectSubmissionResult(failureDom.window.document);
+  assert.notStrictEqual(failureFeedback, null);
+  assert.strictEqual(failureFeedback.isSubmitted, true);
+  assert.strictEqual(failureFeedback.isCorrect, false);
+  assert.deepStrictEqual(failureFeedback.revealedAnswers, ['True']);
+  console.log('✓ SoloLearn failure banner detected and revealed correct answer ("True") extracted!');
+
+  // Test 28: End-to-End Controller Adaptation Loop
+  console.log('\n[Test 28] End-to-End Controller Adaptation & Learning Flow');
+  const endToEndDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div id="root">
+      <div data-test="lesson-content">
+        <h2 data-test="quiz-title">What is 2 + 2 in Python?</h2>
+        <div class="choices">
+          <button data-test="quiz-option">4</button>
+          <button data-test="quiz-option">22</button>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/python' });
+
+  global.window = endToEndDom.window;
+  global.document = endToEndDom.window.document;
+  global.window.SoloLearnConfig = Config;
+  global.window.SoloLearnMemory = SoloLearnMemory;
+  global.window.SoloLearnParser = Parser;
+  global.window.SoloLearnExecutor = Executor;
+  global.window.SoloLearnUI = require('../src/ui.js');
+
+  const testCtrl = new SoloLearnCompanionController();
+  await testCtrl.init();
+
+  testCtrl.lastActiveQuestion = {
+    title: 'What is 2 + 2 in Python?',
+    type: 'single_choice',
+    language: 'Python',
+    options: ['4', '22']
+  };
+  testCtrl.lastActiveResult = {
+    answers: ['22'], // Erroneous initial result
+    type: 'single_choice'
+  };
+
+  // User triggers manual correction
+  testCtrl.handleFeedbackWrong('4');
+  const finalLearned = testCtrl.engine.memory.get(testCtrl.lastActiveQuestion);
+  assert.strictEqual(finalLearned.status, 'corrected');
+  assert.deepStrictEqual(finalLearned.answers, ['4']);
+  // Test 29: Multi-Select SQL LIKE Pattern Matching ("The%King_")
+  console.log('\n[Test 29] Multi-Select SQL LIKE Pattern Matching ("The%King_") with Multi-Option Highlighting & Auto-Fill');
+  const multiSelectDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="quiz-container">
+      <h2 data-test="quiz-title">Which book records will match the pattern 'The%King_'</h2>
+      <div data-test="subtitle">Select all correct answers.</div>
+      <div class="choices">
+        <label class="choice-card"><input type="checkbox" id="opt1" /> The Patient King3B</label>
+        <label class="choice-card"><input type="checkbox" id="opt2" /> The Warrior King2</label>
+        <label class="choice-card"><input type="checkbox" id="opt3" /> The Warrior King1</label>
+        <label class="choice-card"><input type="checkbox" id="opt4" /> The Silent King</label>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/sql' });
+
+  global.window = multiSelectDom.window;
+  global.document = multiSelectDom.window.document;
+
+  const parsedSqlMulti = Parser.parseQuestion();
+  assert.strictEqual(parsedSqlMulti.type, 'multi_choice', 'Should be classified as multi_choice');
+  assert.ok(parsedSqlMulti.extraText.includes('MULTI-SELECT'), 'Extra text must instruct AI to select all answers');
+
+  // Verify memory engine immediately resolves both answers from knowledge bank
+  const multiMemEngine = new SoloLearnMemory();
+  const multiRecord = multiMemEngine.get(parsedSqlMulti);
+  assert.notStrictEqual(multiRecord, null, 'Must retrieve pre-seeded multi-choice record');
+  assert.deepStrictEqual(multiRecord.answers, ['The Warrior King1', 'The Warrior King2'], 'Must have BOTH correct answers');
+
+  // Highlight both options on the webpage
+  const highlightMultiRes = Executor.highlightAnswerOnPage(parsedSqlMulti, multiRecord);
+  assert.strictEqual(highlightMultiRes.success, true);
+  const highlightedChoices = multiSelectDom.window.document.querySelectorAll('.sl-ai-highlighted-choice');
+  assert.strictEqual(highlightedChoices.length, 2, 'BOTH matching choice cards must be highlighted on the webpage!');
+
+  // Auto-Fill / Check both checkboxes
+  const autoFillMultiRes = Executor.autoFillAnswer(parsedSqlMulti, multiRecord);
+  assert.strictEqual(autoFillMultiRes.success, true);
+  const opt2 = multiSelectDom.window.document.getElementById('opt2');
+  const opt3 = multiSelectDom.window.document.getElementById('opt3');
+  assert.strictEqual(opt2.checked, true, 'Option 2 (The Warrior King2) checkbox must be checked');
+  assert.strictEqual(opt3.checked, true, 'Option 3 (The Warrior King1) checkbox must be checked');
+  console.log('✓ Multi-Select SQL LIKE Pattern Matching verified: BOTH correct options selected and highlighted!');
+
+  global.fetch = originalFetch;
+
+  console.log('\n================================================================');
+  console.log('🎉 ALL 29 COMPREHENSIVE MULTI-PROVIDER, LEARNING & MULTI-SELECT TESTS PASSED! 🎉');
+  console.log('================================================================\n');
   process.exit(0);
 }
 
@@ -229,3 +1273,4 @@ runAsyncTests().catch(err => {
   console.error('Test failed:', err);
   process.exit(1);
 });
+
