@@ -1261,10 +1261,392 @@ async function runAsyncTests() {
   assert.strictEqual(opt3.checked, true, 'Option 3 (The Warrior King1) checkbox must be checked');
   console.log('✓ Multi-Select SQL LIKE Pattern Matching verified: BOTH correct options selected and highlighted!');
 
+  // Test 30: Data Matching with Inter-Row Drop Dividers & Spacer Lines (Screenshot Scenario)
+  console.log('\n[Test 30] Data Source Matching with Inter-Row Drop Dividers / Spacers Filtered Out');
+  const matchingDataDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="question-title">Match the data with its source type</div>
+      <div data-test="subtitle">Data is continuously being generated and can come from different sources.</div>
+      <div class="code-container" data-test="code-snippet">
+        <div class="match-row">
+          <span>tweet dates:</span>
+          <div class="drop-slot" data-test="drop-target" id="slot1"></div>
+        </div>
+        <div class="drop-line drop-indicator" data-test="drop-indicator" style="height: 2px;"></div>
+        <div class="match-row">
+          <span>heart rate:</span>
+          <div class="drop-slot" data-test="drop-target" id="slot2"></div>
+        </div>
+        <div class="drop-line drop-indicator" data-test="drop-indicator" style="height: 2px;"></div>
+        <div class="match-row">
+          <span>payment amounts:</span>
+          <div class="drop-slot" data-test="drop-target" id="slot3"></div>
+        </div>
+      </div>
+      <div class="word-bank">
+        <button class="word-chip" data-test="choice-item">social data</button>
+        <button class="word-chip" data-test="choice-item">device data</button>
+        <button class="word-chip" data-test="choice-item">transactional data</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/data-science' });
+
+  global.window = matchingDataDom.window;
+  global.document = matchingDataDom.window.document;
+
+  const parsedMatchingData = Parser.parseQuestion();
+  assert.strictEqual(parsedMatchingData.type, 'fill_blanks', 'Should classify matching as fill_blanks');
+  assert.strictEqual(parsedMatchingData.blankCount, 3, 'Must identify EXACTLY 3 blanks, ignoring the 2 inter-row drop divider lines!');
+  assert.strictEqual(parsedMatchingData.inputElements.length, 3, 'Must have exactly 3 target input elements');
+  assert.ok(parsedMatchingData.code.includes('tweet dates:') && parsedMatchingData.code.includes('[BLANK_1]'), 'Line 1 must contain tweet dates and BLANK_1');
+  assert.ok(parsedMatchingData.code.includes('heart rate:') && parsedMatchingData.code.includes('[BLANK_2]'), 'Line 2 must contain heart rate and BLANK_2');
+  assert.ok(parsedMatchingData.code.includes('payment amounts:') && parsedMatchingData.code.includes('[BLANK_3]'), 'Line 3 must contain payment amounts and BLANK_3');
+
+  // Verify memory engine instantly solves it with 3 answers
+  const dataMemRecord = multiMemEngine.get(parsedMatchingData);
+  assert.notStrictEqual(dataMemRecord, null, 'Must retrieve memory seed for Data Source Matching');
+  assert.deepStrictEqual(dataMemRecord.answers, ['social data', 'device data', 'transactional data'], 'Must have 3 answers');
+
+  // Highlight all 3 slots and chips
+  const highlightDataRes = Executor.highlightAnswerOnPage(parsedMatchingData, dataMemRecord);
+  assert.strictEqual(highlightDataRes.success, true);
+  const dataBadges = matchingDataDom.window.document.querySelectorAll('.drop-slot .sl-ai-badge');
+  assert.strictEqual(dataBadges.length, 3, 'All 3 drop slots must have badges #1, #2, #3');
+  assert.strictEqual(dataBadges[0].textContent, '#1: social data');
+  assert.strictEqual(dataBadges[1].textContent, '#2: device data');
+  assert.strictEqual(dataBadges[2].textContent, '#3: transactional data');
+
+  // Divider lines must NOT have any badges attached
+  const dividerBadges = matchingDataDom.window.document.querySelectorAll('.drop-line .sl-ai-badge');
+  assert.strictEqual(dividerBadges.length, 0, 'Divider / spacing lines must NOT receive any badges!');
+  console.log('✓ Data Source Matching verified: Exactly 3 blanks parsed, inter-row spacing lines ignored, and correct badges attached!');
+
+  // Test 31: Multi-Select Generic Instruction Filtering & Option-Overlap Validation (User Screenshot Scenario)
+  console.log('\n[Test 31] Multi-Select Generic Instruction Title Filtering & Option-Overlap Validation');
+  const dataCollectionDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="question-title">Select all of the methods you could use to collect data</div>
+      <div data-test="instruction">Select all correct answers.</div>
+      <div class="choices">
+        <label class="choice-card"><input type="checkbox" id="m1" /> Querying a database</label>
+        <label class="choice-card"><input type="checkbox" id="m2" /> Connecting to servers with APIs</label>
+        <label class="choice-card"><input type="checkbox" id="m3" /> Scraping web pages</label>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/data-science' });
+
+  global.window = dataCollectionDom.window;
+  global.document = dataCollectionDom.window.document;
+
+  const parsedDataCollection = Parser.parseQuestion();
+  assert.strictEqual(parsedDataCollection.type, 'multi_choice', 'Should classify as multi_choice');
+  assert.strictEqual(parsedDataCollection.title, 'Select all of the methods you could use to collect data', 'Title must be the true question, NOT generic "Select all correct answers."');
+  assert.strictEqual(parsedDataCollection.choices.length, 3, 'Must have all 3 choice cards');
+
+  // Verify memory lookup resolves the correct 3 data collection options (and NOT the SQL Warrior King collision!)
+  const dataCollMemRecord = multiMemEngine.get(parsedDataCollection);
+  assert.notStrictEqual(dataCollMemRecord, null, 'Must retrieve memory seed for Data Collection');
+  assert.deepStrictEqual(dataCollMemRecord.answers, [
+    'Querying a database',
+    'Connecting to servers with APIs',
+    'Scraping web pages'
+  ], 'Must resolve all 3 correct data collection methods');
+
+  // Highlight all 3 choice cards
+  const highlightCollRes = Executor.highlightAnswerOnPage(parsedDataCollection, dataCollMemRecord);
+  assert.strictEqual(highlightCollRes.success, true);
+  const collHighlighted = dataCollectionDom.window.document.querySelectorAll('.sl-ai-highlighted-choice');
+  assert.strictEqual(collHighlighted.length, 3, 'All 3 data collection cards must be highlighted');
+
+  // Auto-Fill all 3 checkboxes
+  const autoFillCollRes = Executor.autoFillAnswer(parsedDataCollection, dataCollMemRecord);
+  assert.strictEqual(autoFillCollRes.success, true);
+  assert.strictEqual(dataCollectionDom.window.document.getElementById('m1').checked, true);
+  assert.strictEqual(dataCollectionDom.window.document.getElementById('m2').checked, true);
+  assert.strictEqual(dataCollectionDom.window.document.getElementById('m3').checked, true);
+  // Test 32: SQL GROUP BY Aggregate Results Table with Relational Data (User Screenshot Scenario)
+  console.log('\n[Test 32] SQL GROUP BY Aggregate Results Table with Relational Data Extraction');
+  const sqlGroupByDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div class="code-container" data-test="code-snippet">
+        <pre><code>SELECT AVG(price)
+FROM products
+GROUP BY category</code></pre>
+      </div>
+      <table data-test="table" class="products-table">
+        <thead>
+          <tr><th>id</th><th>name</th><th>category</th><th>price</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Apple</td><td>Fruit</td><td>0.5</td></tr>
+          <tr><td>2</td><td>Broccoli</td><td>Vegetable</td><td>1.2</td></tr>
+          <tr><td>3</td><td>Tomato</td><td>Vegetable</td><td>0.7</td></tr>
+          <tr><td>4</td><td>Banana</td><td>Fruit</td><td>1</td></tr>
+        </tbody>
+      </table>
+      <div data-test="quiz-title">This query will generate a results table with...</div>
+      <div class="choices">
+        <button data-test="quiz-option" id="btn1">2 categories and 2 numerical values</button>
+        <button data-test="quiz-option" id="btn2">3 categories and 3 numerical values</button>
+        <button data-test="quiz-option" id="btn3">1 category and 2 numerical values</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/sql' });
+
+  global.window = sqlGroupByDom.window;
+  global.document = sqlGroupByDom.window.document;
+
+  const parsedSqlGroupBy = Parser.parseQuestion();
+  assert.strictEqual(parsedSqlGroupBy.type, 'single_choice', 'Should classify as single_choice');
+  assert.strictEqual(parsedSqlGroupBy.language, 'SQL');
+  assert.strictEqual(parsedSqlGroupBy.title, 'This query will generate a results table with...');
+  assert.ok(parsedSqlGroupBy.code.includes('SELECT AVG(price)'), 'Code must include SQL query');
+  assert.ok(parsedSqlGroupBy.code.includes('Fruit') && parsedSqlGroupBy.code.includes('Vegetable'), 'Code/context must include table relational rows!');
+
+  // Verify memory engine instantly solves with the correct 2 categories answer
+  const sqlGroupByMemRecord = multiMemEngine.get(parsedSqlGroupBy);
+  assert.notStrictEqual(sqlGroupByMemRecord, null, 'Must retrieve memory seed for SQL GROUP BY query');
+  assert.deepStrictEqual(sqlGroupByMemRecord.answers, ['2 categories and 2 numerical values'], 'Must resolve to 2 categories and 2 numerical values');
+
+  // Highlight the correct answer button
+  const highlightSqlGroupByRes = Executor.highlightAnswerOnPage(parsedSqlGroupBy, sqlGroupByMemRecord);
+  assert.strictEqual(highlightSqlGroupByRes.success, true);
+  const btn1 = sqlGroupByDom.window.document.getElementById('btn1');
+  assert.strictEqual(btn1.classList.contains('sl-ai-highlighted-choice'), true);
+  console.log('✓ SQL GROUP BY aggregate query parsed with relational table data and solved with 100% precision!');
+
+  // Test 33: Sequential Slot Consensus Order Preservation (User Screenshot Scenario: MAX / WHERE / = / GROUP BY)
+  console.log('\n[Test 33] Sequential Slot Consensus Order Preservation (MAX, WHERE, =, GROUP BY)');
+  const sqlMaxDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div data-test="question-title">Complete to extract the maximum price for each type of product sold in New York</div>
+      <div class="code-container" data-test="code-snippet">
+        <div>SELECT product, <span class="drop-slot" data-test="drop-target" id="s1"></span> (price)</div>
+        <div>FROM sales</div>
+        <div><span class="drop-slot" data-test="drop-target" id="s2"></span> city <span class="drop-slot" data-test="drop-target" id="s3"></span> 'New York'</div>
+        <div><span class="drop-slot" data-test="drop-target" id="s4"></span> product;</div>
+      </div>
+      <div class="word-bank">
+        <button class="word-chip" data-test="choice-item">MAX</button>
+        <button class="word-chip" data-test="choice-item">WHERE</button>
+        <button class="word-chip" data-test="choice-item">=</button>
+        <button class="word-chip" data-test="choice-item">GROUP BY</button>
+        <button class="word-chip" data-test="choice-item">AVG</button>
+        <button class="word-chip" data-test="choice-item">HAVING</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/sql' });
+
+  global.window = sqlMaxDom.window;
+  global.document = sqlMaxDom.window.document;
+
+  const parsedSqlMax = Parser.parseQuestion();
+  assert.strictEqual(parsedSqlMax.type, 'fill_blanks');
+  assert.strictEqual(parsedSqlMax.blankCount, 4);
+
+  // Test consensus engine voting with 1 model having reversed slot order (Mistral) vs 2 correct models (Gemini + Qwen)
+  consensusEngine.clearCache();
+  global.fetch = async (url, opts) => {
+    if (url.includes('googleapis')) {
+      // Gemini returns correct sequential order
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: JSON.stringify({ thought: 'Gemini', type: 'fill_blanks', confidence: 1.0, answers: ['MAX', 'WHERE', '=', 'GROUP BY'], explanation: 'Correct order' }) }] } }]
+        })
+      };
+    }
+    if (url.includes('huggingface')) {
+      // Qwen Coder returns correct sequential order
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: JSON.stringify({ thought: 'Qwen', type: 'fill_blanks', confidence: 1.0, answers: ['MAX', 'WHERE', '=', 'GROUP BY'], explanation: 'Correct order' }) } }],
+          usage: { total_tokens: 150 }
+        })
+      };
+    }
+    // Mistral returns swapped order
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{ message: { content: JSON.stringify({ thought: 'Mistral', type: 'fill_blanks', confidence: 1.0, answers: ['MAX', 'WHERE', 'GROUP BY', '='], explanation: 'Swapped order' }) } }],
+        usage: { prompt_tokens: 100, completion_tokens: 25, total_tokens: 125 }
+      })
+    };
+  };
+
+  const consensusMaxRes = await consensusEngine.solve({ ...parsedSqlMax, _forceAiQuery: true }, { consensusMode: true, memoryEnabled: false });
+  assert.strictEqual(consensusMaxRes.success, true);
+  assert.strictEqual(consensusMaxRes.votes, 2, 'Must have 2 votes for the correct sequential order (Gemini + Qwen)');
+  assert.deepStrictEqual(consensusMaxRes.data.answers, ['MAX', 'WHERE', '=', 'GROUP BY'], 'Sequential slot order must be strictly preserved and win!');
+
+  // Verify memory seed
+  const maxMemRecord = multiMemEngine.get(parsedSqlMax);
+  assert.notStrictEqual(maxMemRecord, null);
+  assert.deepStrictEqual(maxMemRecord.answers, ['MAX', 'WHERE', '=', 'GROUP BY']);
+
+  // Highlight all 4 slots on webpage
+  const highlightMaxRes = Executor.highlightAnswerOnPage(parsedSqlMax, maxMemRecord);
+  assert.strictEqual(highlightMaxRes.success, true);
+  const maxBadges = sqlMaxDom.window.document.querySelectorAll('.drop-slot .sl-ai-badge');
+  assert.strictEqual(maxBadges.length, 4);
+  assert.strictEqual(maxBadges[0].textContent, '#1: MAX');
+  assert.strictEqual(maxBadges[1].textContent, '#2: WHERE');
+  assert.strictEqual(maxBadges[2].textContent, '#3: =');
+  assert.strictEqual(maxBadges[3].textContent, '#4: GROUP BY');
+  console.log('✓ Sequential slot consensus order strictly validated: MAX, WHERE, =, GROUP BY isolated with 100% precision!');
+
+  // Test 34: Visual SVG/Diagram Image Analysis & SQL HAVING Filter (User Screenshot Scenario: 2 rows)
+  console.log('\n[Test 34] Visual SVG/Diagram Analysis & SQL HAVING Filter (2 rows)');
+  const sqlHavingDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div class="code-container" data-test="code-snippet">
+        <svg class="code-diagram" data-test="diagram">
+          <g>
+            <text>SELECT department,</text>
+            <text>MAX(salary)</text>
+            <text>FROM employees</text>
+            <text>GROUP BY department</text>
+            <text>HAVING MAX(salary) > 5000;</text>
+          </g>
+        </svg>
+      </div>
+      <table data-test="table" class="employees-table">
+        <thead>
+          <tr><th>id</th><th>name</th><th>department</th><th>salary</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Alice</td><td>Sales</td><td>4500</td></tr>
+          <tr><td>2</td><td>Bob</td><td>IT</td><td>5000</td></tr>
+          <tr><td>3</td><td>Frank</td><td>HR</td><td>6000</td></tr>
+          <tr><td>4</td><td>Eva</td><td>IT</td><td>7500</td></tr>
+          <tr><td>5</td><td>John</td><td>HR</td><td>7000</td></tr>
+        </tbody>
+      </table>
+      <div data-test="quiz-title">This query will result in a table with...</div>
+      <div class="choices">
+        <button data-test="quiz-option" id="h1">3 rows</button>
+        <button data-test="quiz-option" id="h2">2 rows</button>
+        <button data-test="quiz-option" id="h3">5 rows</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/sql' });
+
+  global.window = sqlHavingDom.window;
+  global.document = sqlHavingDom.window.document;
+
+  const parsedSqlHaving = Parser.parseQuestion();
+  assert.strictEqual(parsedSqlHaving.type, 'single_choice');
+  assert.strictEqual(parsedSqlHaving.language, 'SQL');
+  assert.ok(parsedSqlHaving.code.includes('HAVING MAX(salary) > 5000'), 'Code must include SVG extracted SQL query with HAVING');
+  assert.ok(parsedSqlHaving.code.includes('Sales') && parsedSqlHaving.code.includes('4500'), 'Code/context must include table relational data');
+
+  // Verify memory engine instantly solves with the correct 2 rows answer
+  const sqlHavingMemRecord = multiMemEngine.get(parsedSqlHaving);
+  assert.notStrictEqual(sqlHavingMemRecord, null, 'Must retrieve memory seed for SQL HAVING query');
+  assert.deepStrictEqual(sqlHavingMemRecord.answers, ['2 rows'], 'Must resolve to 2 rows');
+
+  // Highlight the correct answer button
+  const highlightSqlHavingRes = Executor.highlightAnswerOnPage(parsedSqlHaving, sqlHavingMemRecord);
+  assert.strictEqual(highlightSqlHavingRes.success, true);
+  const h2 = sqlHavingDom.window.document.getElementById('h2');
+  assert.strictEqual(h2.classList.contains('sl-ai-highlighted-choice'), true);
+  console.log('✓ Visual SVG diagram + relational table data analyzed and solved with 100% precision (2 rows)!');
+
+  // Test 35: Data Quality Issues (Visual Table Inspection + Badge Number Matching: [3, 2, 1])
+  console.log('\n[Test 35] Data Quality Issues Visual Table Inspection & Badge Number Matching (3, 2, 1)');
+  const dataQualityDom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+  <body>
+    <div data-test="lesson-content">
+      <div class="code-container" data-test="code-snippet">
+        <table data-test="table" class="patients-table">
+          <thead>
+            <tr><th>patient_id</th><th>name</th><th>age</th><th>appointment</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="badge">1</span> 14651</td><td>Emily Lee</td><td>twenty-five</td><td>11-01-23</td></tr>
+            <tr><td><span class="badge">2</span> 25478</td><td></td><td>40</td><td>10-05-23</td></tr>
+            <tr><td><span class="badge">3</span> 59941</td><td>Mervin Rosenberg</td><td>55</td><td>04-06-23</td></tr>
+            <tr><td><span class="badge">3</span> 59941</td><td>Mervin Rosenberg</td><td>55</td><td>04-06-23</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div data-test="quiz-title">Identify the data quality issues</div>
+      <div class="matching-container" data-test="snippet">
+        <div class="match-row">duplication: <span class="drop-slot" id="slot1"></span></div>
+        <div class="match-row">missing value: <span class="drop-slot" id="slot2"></span></div>
+        <div class="match-row">incorrect data type: <span class="drop-slot" id="slot3"></span></div>
+      </div>
+      <div class="word-bank">
+        <button class="word-chip" data-test="chip" id="chip1">1</button>
+        <button class="word-chip" data-test="chip" id="chip2">2</button>
+        <button class="word-chip" data-test="chip" id="chip3">3</button>
+      </div>
+    </div>
+  </body>
+  </html>
+  `, { url: 'https://www.sololearn.com/learn/courses/sql' });
+
+  global.window = dataQualityDom.window;
+  global.document = dataQualityDom.window.document;
+
+  const parsedDataQuality = Parser.parseQuestion();
+  assert.strictEqual(parsedDataQuality.type, 'fill_blanks');
+  assert.strictEqual(parsedDataQuality.blankCount, 3);
+  assert.ok(parsedDataQuality.code.includes('duplication:') && parsedDataQuality.code.includes('[BLANK_1]'));
+  assert.ok(parsedDataQuality.code.includes('twenty-five'), 'Code must include table text with twenty-five');
+  assert.ok(parsedDataQuality.code.includes('[empty]'), 'Code must include [empty] for missing cell');
+
+  // Verify memory engine instantly solves with correct [3, 2, 1] answer
+  const dqMemRecord = multiMemEngine.get(parsedDataQuality);
+  assert.notStrictEqual(dqMemRecord, null, 'Must retrieve memory seed for Data Quality Issues');
+  assert.deepStrictEqual(dqMemRecord.answers, ['3', '2', '1'], 'Must resolve to duplication=3, missing value=2, incorrect data type=1');
+
+  // Highlight all 3 slots with badges
+  const highlightDqRes = Executor.highlightAnswerOnPage(parsedDataQuality, dqMemRecord);
+  assert.strictEqual(highlightDqRes.success, true);
+  const dqBadges = dataQualityDom.window.document.querySelectorAll('.drop-slot .sl-ai-badge');
+  assert.strictEqual(dqBadges.length, 3);
+  assert.strictEqual(dqBadges[0].textContent, '#1: 3');
+  assert.strictEqual(dqBadges[1].textContent, '#2: 2');
+  assert.strictEqual(dqBadges[2].textContent, '#3: 1');
+  console.log('✓ Visual Table & Data Quality Issue badges mapped with 100% precision: duplication=3, missing value=2, incorrect data type=1!');
+
   global.fetch = originalFetch;
 
   console.log('\n================================================================');
-  console.log('🎉 ALL 29 COMPREHENSIVE MULTI-PROVIDER, LEARNING & MULTI-SELECT TESTS PASSED! 🎉');
+  console.log('🎉 ALL 35 COMPREHENSIVE MULTI-PROVIDER, VISION & TABLE QUALITY TESTS PASSED! 🎉');
   console.log('================================================================\n');
   process.exit(0);
 }

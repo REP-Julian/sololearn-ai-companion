@@ -115,6 +115,73 @@
       status: 'mastered',
       reflection: "SQL LIKE pattern 'The%King_': % matches zero or more characters (e.g. ' Warrior '), and _ matches exactly one single character ('1' or '2'). '3B' has 2 characters, and 'The Silent King' has 0 characters after King.",
       source: 'historical_seed'
+    },
+    {
+      title: 'Match the data with its source type',
+      code: 'tweet dates: [BLANK_1]\nheart rate: [BLANK_2]\npayment amounts: [BLANK_3]',
+      language: 'Data Concepts',
+      type: 'fill_blanks',
+      blankCount: 3,
+      answers: ['social data', 'device data', 'transactional data'],
+      options: ['social data', 'device data', 'transactional data'],
+      status: 'mastered',
+      reflection: 'Tweet dates are social data, heart rate measurements are device (IoT/sensor) data, and payment amounts are transactional data.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'Select all of the methods you could use to collect data',
+      language: 'Data Concepts',
+      type: 'multi_choice',
+      answers: ['Querying a database', 'Connecting to servers with APIs', 'Scraping web pages'],
+      options: ['Querying a database', 'Connecting to servers with APIs', 'Scraping web pages'],
+      status: 'mastered',
+      reflection: 'All three methods (querying databases, API integration, and web scraping) are standard techniques for collecting data.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'This query will generate a results table with...',
+      language: 'SQL',
+      type: 'single_choice',
+      answers: ['2 categories and 2 numerical values'],
+      options: ['2 categories and 2 numerical values', '3 categories and 3 numerical values', '1 category and 2 numerical values'],
+      status: 'mastered',
+      reflection: 'The products table contains 2 distinct categories (Fruit and Vegetable). GROUP BY category produces 2 grouped rows, each computing an AVG(price) numerical value, resulting in 2 categories and 2 numerical values.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'Complete to extract the maximum price for each type of product sold in New York',
+      code: 'SELECT product, [BLANK_1] (price)\nFROM sales\n[BLANK_2] city [BLANK_3] \'New York\'\n[BLANK_4] product;',
+      language: 'SQL',
+      type: 'fill_blanks',
+      blankCount: 4,
+      answers: ['MAX', 'WHERE', '=', 'GROUP BY'],
+      options: ['MAX', 'WHERE', '=', 'GROUP BY', 'AVG', 'HAVING'],
+      status: 'mastered',
+      reflection: 'The query calculates the maximum price per product in New York. Slot 1 is MAX(price), Slot 2 is WHERE, Slot 3 is \'=\' to filter city = \'New York\', and Slot 4 is GROUP BY to group by product.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'This query will result in a table with...',
+      code: 'SELECT department,\n       MAX(salary)\nFROM employees\nGROUP BY department\nHAVING MAX(salary) > 5000;\n\nemployees:\nid | name | department | salary\n1 | Alice | Sales | 4500\n2 | Bob | IT | 5000\n3 | Frank | HR | 6000\n4 | Eva | IT | 7500\n5 | John | HR | 7000',
+      language: 'SQL',
+      type: 'single_choice',
+      answers: ['2 rows'],
+      options: ['3 rows', '2 rows', '5 rows'],
+      status: 'mastered',
+      reflection: 'The employees table has 3 departments: Sales (MAX 4500), IT (MAX 7500), HR (MAX 7000). The HAVING MAX(salary) > 5000 condition filters out Sales (4500 <= 5000), leaving exactly 2 rows (IT and HR).',
+      source: 'historical_seed'
+    },
+    {
+      title: 'Identify the data quality issues',
+      code: 'patients\npatient_id | name | age | appointment\n1 | 14651 | Emily Lee | twenty-five | 11-01-23\n2 | 25478 | [empty] | 40 | 10-05-23\n3 | 59941 | Mervin Rosenberg | 55 | 04-06-23\n3 | 59941 | Mervin Rosenberg | 55 | 04-06-23\n\nduplication: [BLANK_1]\nmissing value: [BLANK_2]\nincorrect data type: [BLANK_3]',
+      language: 'SQL',
+      type: 'fill_blanks',
+      blankCount: 3,
+      answers: ['3', '2', '1'],
+      options: ['1', '2', '3'],
+      status: 'mastered',
+      reflection: 'Row 1 (Badge 1) has string "twenty-five" in numeric age column (incorrect data type = 1). Row 2 (Badge 2) has an empty name field (missing value = 2). Rows 3 and 4 (Badge 3) are duplicate records with identical patient_id 59941, Mervin Rosenberg, 55 (duplication = 3). Therefore: duplication = 3, missing value = 2, incorrect data type = 1.',
+      source: 'historical_seed'
     }
   ];
 
@@ -286,6 +353,33 @@
     }
 
     /**
+     * Validates that the memory candidate has compatible options/answers with the query.
+     */
+    validateOptionMatch(question, item) {
+      if (!question || !item) return false;
+
+      const qOpts = (question.options || (question.choices ? question.choices.map(c => c.text || c) : []))
+        .map(o => this.normalize(o))
+        .filter(Boolean);
+
+      const itemOpts = (item.options || []).map(o => this.normalize(o)).filter(Boolean);
+      const itemAns = (item.answers || []).map(a => this.normalize(a)).filter(Boolean);
+
+      // If both query and memory record have options/answers, verify at least one option overlaps
+      if (qOpts.length > 0 && (itemOpts.length > 0 || itemAns.length > 0)) {
+        const hasOverlap = qOpts.some(q => 
+          itemOpts.includes(q) || 
+          itemAns.includes(q) || 
+          itemOpts.some(io => io.includes(q) || q.includes(io)) ||
+          itemAns.some(ia => ia.includes(q) || q.includes(ia))
+        );
+        if (!hasOverlap) return false;
+      }
+
+      return true;
+    }
+
+    /**
      * Retrieves memory for a question if known.
      */
     get(question) {
@@ -294,20 +388,29 @@
 
       for (const sig of signatures) {
         if (this.memories.has(sig)) {
-          return this.memories.get(sig);
+          const item = this.memories.get(sig);
+          if (this.validateOptionMatch(question, item)) {
+            return item;
+          }
         }
       }
 
       // Fuzzy scan over question title and code if direct signature missed
       const titleNorm = this.normalize(question.title || '');
       if (titleNorm && titleNorm.length > 10) {
+        const qCodeNorm = this.normalize(question.code || '');
         for (const item of this.memories.values()) {
           const itemTitleNorm = this.normalize(item.title || '');
           if (itemTitleNorm === titleNorm) {
-            const itemCode = this.normalize((item.code || '').slice(0, 50));
-            const qCode = this.normalize((question.code || '').slice(0, 50));
-            if (!itemCode || !qCode || itemCode === qCode) {
-              return item;
+            const itemCodeNorm = this.normalize(item.code || '');
+            const codeMatches = !itemCodeNorm || !qCodeNorm ||
+                                itemCodeNorm.slice(0, 40) === qCodeNorm.slice(0, 40) ||
+                                itemCodeNorm.includes(qCodeNorm.slice(0, 30)) ||
+                                qCodeNorm.includes(itemCodeNorm.slice(0, 30));
+            if (codeMatches) {
+              if (this.validateOptionMatch(question, item)) {
+                return item;
+              }
             }
           }
         }

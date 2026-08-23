@@ -75,13 +75,16 @@
       return `${ty}_${bc}_${t}_${c}_${opts}`;
     }
 
-    normalizeSignature(answers) {
+    normalizeSignature(answers, questionType = '') {
       if (!answers) return '';
       const arr = Array.isArray(answers) ? answers : [answers];
-      return arr
-        .map(a => String(a).toLowerCase().trim().replace(/[\r\n\t]/g, ' ').replace(/['"`]/g, ''))
-        .sort()
-        .join('|||');
+      const cleaned = arr.map(a => String(a).toLowerCase().trim().replace(/[\r\n\t]/g, ' ').replace(/['"`]/g, ''));
+      // Only sort for multi_choice (where checkbox selection order does not matter).
+      // For fill_blanks, reorder, and slot tasks, DO NOT sort! Sequential slot order is critical!
+      if (questionType === 'multi_choice') {
+        return cleaned.slice().sort().join('|||');
+      }
+      return cleaned.join('|||');
     }
 
     /**
@@ -292,7 +295,7 @@
 
       const groupMap = new Map();
       for (const item of successfulResults) {
-        const sig = this.normalizeSignature(item.data.answers || item.data.answer);
+        const sig = this.normalizeSignature(item.data.answers || item.data.answer, questionPayload ? questionPayload.type : '');
         if (!groupMap.has(sig)) {
           groupMap.set(sig, {
             votes: 0,

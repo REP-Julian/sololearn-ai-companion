@@ -46,6 +46,97 @@
     }
   }
 
+  function isDividerOrSpacer(el) {
+    if (!el) return false;
+
+    // Tag and ARIA checks
+    const tag = (el.tagName || '').toUpperCase();
+    if (tag === 'HR') return true;
+    if (el.getAttribute && el.getAttribute('role') === 'separator') return true;
+
+    // Class name and attribute keyword checks
+    const className = (typeof el.className === 'string' ? el.className : (el.getAttribute && el.getAttribute('class')) || '').toLowerCase();
+    const dataTest = (el.getAttribute && el.getAttribute('data-test') || '').toLowerCase();
+    const testId = (el.getAttribute && el.getAttribute('data-testid') || '').toLowerCase();
+    const id = (el.id || '').toLowerCase();
+    const combined = `${className} ${dataTest} ${testId} ${id}`;
+
+    if (
+      combined.includes('divider') ||
+      combined.includes('separator') ||
+      combined.includes('spacer') ||
+      combined.includes('drop-line') ||
+      combined.includes('dropline') ||
+      combined.includes('gap-line') ||
+      combined.includes('reorder-line') ||
+      combined.includes('reorder-gap') ||
+      combined.includes('insert-indicator') ||
+      combined.includes('placeholder-line') ||
+      combined.includes('between-rows') ||
+      combined.includes('line-between') ||
+      combined.includes('drop-indicator') ||
+      combined.includes('insertion-indicator')
+    ) {
+      return true;
+    }
+
+    // Geometry / layout detection: Check if it's an ultra-thin horizontal divider line or zero-height gap
+    try {
+      if (typeof el.getBoundingClientRect === 'function') {
+        const rect = el.getBoundingClientRect();
+        if (rect && rect.height > 0 && rect.height <= 8 && rect.width >= 20) {
+          return true;
+        }
+      }
+      if (el.offsetHeight > 0 && el.offsetHeight <= 8 && el.offsetWidth >= 20) {
+        return true;
+      }
+      if (el.clientHeight > 0 && el.clientHeight <= 8 && el.clientWidth >= 20) {
+        return true;
+      }
+    } catch (_) {}
+
+    // Inline style height check
+    if (el.style) {
+      const h = el.style.height || '';
+      if (h && (h === '0px' || h === '1px' || h === '2px' || h === '3px' || h === '4px' || h === '5px' || h === '6px' || h === '8px')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function isGenericInstruction(raw) {
+    if (!raw) return true;
+    const lower = raw.toLowerCase().trim().replace(/[.:!]+$/, '');
+    return (
+      lower === 'select all correct answers' ||
+      lower === 'select all answers that apply' ||
+      lower === 'select all that apply' ||
+      lower === 'select all options that apply' ||
+      lower === 'select all matching answers' ||
+      lower === 'select all correct' ||
+      lower === 'select the correct answer' ||
+      lower === 'select the correct answers' ||
+      lower === 'select the correct option' ||
+      lower === 'select the correct options' ||
+      lower === 'select all' ||
+      lower === 'choose all that apply' ||
+      lower === 'choose all correct answers' ||
+      lower === 'choose all matching answers' ||
+      lower === 'choose the correct answer' ||
+      lower === 'choose the correct answers' ||
+      lower === 'choose the correct option' ||
+      lower === 'check all that apply' ||
+      lower === 'check all correct answers' ||
+      lower === 'pick the correct answer' ||
+      lower === 'pick all that apply' ||
+      lower === 'fill in the blank' ||
+      lower === 'fill in the blanks'
+    );
+  }
+
   const BLANK_SELECTOR = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="hidden"]), textarea, [contenteditable="true"], span[class*="slot" i], div[class*="slot" i], span[class*="blank" i], div[class*="blank" i], span[class*="circle" i], div[class*="circle" i], div[class*="drop" i], span[class*="drop" i], div[class*="droppable" i], span[class*="droppable" i], div[class*="empty" i], span[class*="empty" i], div[class*="gap" i], span[class*="gap" i], div[class*="hole" i], span[class*="hole" i], [data-test*="blank"], [data-test*="slot"], [data-test*="empty"], [data-test*="drop"], [data-test*="droppable"], [data-test*="hole"], [data-test*="target"]';
 
   /**
@@ -470,7 +561,7 @@
           if (!isVisible(el)) continue;
           if (el.closest('header') || el.closest('nav') || el.closest('#sololearn-ai-hud')) continue;
           const cleaned = cleanTitleText(getCleanText(el));
-          if (cleaned.length > 5 && !cleaned.toLowerCase().includes('sololearn is a platform')) {
+          if (cleaned.length > 5 && !cleaned.toLowerCase().includes('sololearn is a platform') && !isGenericInstruction(cleaned)) {
             return cleaned;
           }
         }
@@ -486,6 +577,7 @@
         const cleaned = cleanTitleText(raw);
         if (cleaned.length < 5 || cleaned.length > 350) continue;
         if (cleaned.toLowerCase().includes('sololearn is a platform')) continue;
+        if (isGenericInstruction(cleaned)) continue;
 
         const lower = cleaned.toLowerCase();
 
@@ -518,7 +610,7 @@
         if (!isVisible(p)) continue;
         if (p.closest('header') || p.closest('nav') || p.closest('button') || p.closest('#sololearn-ai-hud')) continue;
         const cleaned = cleanTitleText(getCleanText(p));
-        if (cleaned.length >= 8 && cleaned.length <= 250 && !cleaned.toLowerCase().includes('sololearn is a platform')) {
+        if (cleaned.length >= 8 && cleaned.length <= 250 && !cleaned.toLowerCase().includes('sololearn is a platform') && !isGenericInstruction(cleaned)) {
           return cleaned;
         }
       }
@@ -532,6 +624,32 @@
         const clone = el.cloneNode(true);
         clone.querySelectorAll('#sololearn-ai-hud, .sl-ai-badge, .sl-ai-order-badge').forEach(b => b.remove());
         clone.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
+        
+        // Table cell support: ensure pipe separators and mark visually empty cells as [empty]
+        clone.querySelectorAll('th, td').forEach(cell => {
+          const text = (cell.textContent || '').replace(/[\s\u00A0\u200B]+/g, ' ').trim();
+          if (!text) {
+            cell.appendChild(document.createTextNode('[empty]'));
+          }
+          cell.appendChild(document.createTextNode(' | '));
+        });
+
+        // SVG Text Support: ensure text in SVG graphics and illustrations has proper spacing and line breaks
+        clone.querySelectorAll('text, tspan').forEach(t => {
+          t.appendChild(document.createTextNode(' '));
+        });
+        clone.querySelectorAll('g').forEach(g => {
+          g.appendChild(document.createTextNode('\n'));
+        });
+
+        // Image Alt text support: ensure images with alt / title attributes are extracted as text
+        clone.querySelectorAll('img').forEach(img => {
+          const alt = img.getAttribute('alt') || img.getAttribute('aria-label') || img.getAttribute('title') || '';
+          if (alt) {
+            img.replaceWith(document.createTextNode(` [Image: ${alt}] `));
+          }
+        });
+
         const blocks = clone.querySelectorAll('div, p, tr, li, pre');
         blocks.forEach(b => {
           b.appendChild(document.createTextNode('\n'));
@@ -547,20 +665,51 @@
       }
     }
 
+    static extractImages(container = document) {
+      const searchRoot = container || document.body;
+      const images = [];
+      try {
+        const imgElements = Array.from(searchRoot.querySelectorAll('img, canvas'));
+        for (const img of imgElements) {
+          if (!isVisible(img) || img.closest('#sololearn-ai-hud')) continue;
+          if (img.tagName.toLowerCase() === 'img') {
+            const src = img.src || img.getAttribute('src') || '';
+            if (src.startsWith('data:image/')) {
+              const match = src.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+              if (match) {
+                images.push({ mimeType: match[1], base64: match[2] });
+              }
+            } else if (src.length > 0) {
+              images.push({ url: src, alt: img.alt || img.getAttribute('aria-label') || '' });
+            }
+          } else if (img.tagName.toLowerCase() === 'canvas') {
+            try {
+              const dataUrl = img.toDataURL('image/png');
+              const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+              if (match) {
+                images.push({ mimeType: match[1], base64: match[2] });
+              }
+            } catch (_) {}
+          }
+        }
+      } catch (_) {}
+      return images;
+    }
+
     static extractCodeAndBlanks(container = document) {
       const searchRoot = container || document.body;
       const candidateBoxes = Array.from(searchRoot.querySelectorAll(
-        'pre, code, div[class*="code" i], div[class*="Code"], div[style*="monospace"], div[class*="editor" i], div[class*="snippet" i], div[class*="syntax" i], div[class*="highlight" i], div[class*="fitb" i], [data-test*="code"], [data-test*="snippet"], [data-test*="fitb"]'
+        'pre, code, table, svg, canvas, img, div[class*="code" i], div[class*="Code"], div[style*="monospace"], div[class*="editor" i], div[class*="snippet" i], div[class*="syntax" i], div[class*="highlight" i], div[class*="fitb" i], div[class*="table" i], div[class*="diagram" i], div[class*="illustration" i], div[class*="graphic" i], div[class*="image" i], div[class*="canvas" i], [data-test*="code"], [data-test*="snippet"], [data-test*="fitb"], [data-test*="table"], [data-test*="diagram"], [data-test*="illustration"], [data-test*="graphic"], [data-test*="image"]'
       ));
 
-      // Fallback: Scan all div/section elements if candidateBoxes is empty
+      // Fallback: Scan all div/section/svg/table elements if candidateBoxes is empty
       if (candidateBoxes.length === 0) {
-        const allDivs = Array.from((document.body || searchRoot).querySelectorAll('div, section, article, pre'));
+        const allDivs = Array.from((document.body || searchRoot).querySelectorAll('div, section, article, pre, table, svg'));
         for (const div of allDivs) {
           if (!isVisible(div) || div.closest('#sololearn-ai-hud') || div.closest('header') || div.closest('nav')) continue;
           const text = getCleanText(div);
           if (
-            (text.includes(';') || text.includes('{') || text.includes('System.out') || text.includes('Console.Write') || text.includes('def ') || text.includes('public ') || text.includes('class ') || text.includes('String ') || text.includes('int ') || text.includes('SELECT ') || text.includes('FROM ')) &&
+            (text.includes(';') || text.includes('{') || text.includes('System.out') || text.includes('Console.Write') || text.includes('def ') || text.includes('public ') || text.includes('class ') || text.includes('String ') || text.includes('int ') || text.includes('SELECT ') || text.includes('FROM ') || text.includes('GROUP BY') || text.includes('WHERE ') || text.includes('HAVING ')) &&
             text.length > 5 && text.length < 2500
           ) {
             candidateBoxes.push(div);
@@ -590,10 +739,11 @@
         const box = codeBoxes[i];
         const rawInsideBlanks = Array.from(box.querySelectorAll(BLANK_SELECTOR));
 
-        // Filter out parent drop containers that contain child drop containers
+        // Filter out parent drop containers that contain child drop containers, and ignore divider lines / spacers
         let insideBlanks = rawInsideBlanks.filter(b => {
           if (!isVisible(b)) return false;
           if (b.closest('#sololearn-ai-hud')) return false;
+          if (isDividerOrSpacer(b)) return false;
           return !rawInsideBlanks.some(other => other !== b && b.contains(other));
         });
 
@@ -601,6 +751,7 @@
         if (insideBlanks.length === 0) {
           const emptyLeaves = Array.from(box.querySelectorAll('span, div, button, em, i, a')).filter(el => {
             if (!isVisible(el) || el.closest('#sololearn-ai-hud')) return false;
+            if (isDividerOrSpacer(el)) return false;
             if (el.children.length > 0) return false;
             const t = el.textContent.replace(/[\s\u00A0\u200B]+/g, '');
             return t === '' || t === '...' || t === '___' || t === '?' || t === '•';
@@ -666,6 +817,7 @@
           if (!isVisible(b)) return false;
           if (b.closest('#sololearn-ai-hud') || b.closest('header') || b.closest('nav')) return false;
           if (b.closest('.word-bank, [data-test*="word-bank"], [class*="wordBank" i]')) return false;
+          if (isDividerOrSpacer(b)) return false;
           return !rawAllBlanks.some(other => other !== b && isVisible(other) && b.contains(other));
         });
 
@@ -793,6 +945,7 @@
         for (const item of items) {
           if (!isVisible(item) || seen.has(item)) continue;
           if (item.closest('#sololearn-ai-hud') || item.closest('header') || item.closest('nav')) continue;
+          if (isDividerOrSpacer(item)) continue;
           
           // Don't select elements that are or contain blank drop slots
           if (item.matches(BLANK_SELECTOR) || item.querySelector(BLANK_SELECTOR)) continue;
@@ -815,6 +968,7 @@
         for (const el of allCandidates) {
           if (!isVisible(el) || seen.has(el)) continue;
           if (el.closest('header') || el.closest('nav') || el.closest('#sololearn-ai-hud')) continue;
+          if (isDividerOrSpacer(el)) continue;
           if (el.matches(BLANK_SELECTOR) || el.querySelector(BLANK_SELECTOR)) continue;
           if (el.children.length > 2) continue;
 
@@ -897,6 +1051,7 @@
           if (!isVisible(item) || seen.has(item)) continue;
           if (item.closest('#sololearn-ai-hud')) continue;
           if (item.closest('header') || item.closest('nav')) continue;
+          if (isDividerOrSpacer(item)) continue;
           if (item.matches(blankSelector) || item.querySelector(blankSelector)) continue;
           const text = getCleanText(item);
           if (isValidTokenText(text)) {
@@ -995,13 +1150,18 @@
         titleLower.includes('match the concept') ||
         titleLower.includes('match the description') ||
         titleLower.includes('match the term') ||
+        titleLower.includes('match the data') ||
+        titleLower.includes('match the') ||
+        titleLower.startsWith('match') ||
         titleLower.includes('pair the') ||
-        titleLower.includes('pair each')
+        titleLower.includes('pair each') ||
+        titleLower.startsWith('pair')
       );
 
       const { code, blankElements } = this.extractCodeAndBlanks(container);
       const choices = this.getChoiceOptions(container, title);
       const reorderTokens = this.getReorderTokens(container);
+      const images = this.extractImages(container);
 
       // Count blanks detected in code string
       const blanksInCodeMatches = (code.match(/\[BLANK_\d+\]/g) || []).length;
@@ -1030,6 +1190,7 @@
           tokens: wordBankItems,
           options: wordBankItems.map(t => t.text),
           choices: wordBankItems,
+          images,
           extraText: `Instruction: Fill in all ${finalBlankCount} missing blank slots in order.`
         };
       }
@@ -1049,6 +1210,7 @@
             blankCount: items.length,
             inputElements: [],
             choices: items,
+            images,
             extraText: 'Instruction: Rearrange the given code snippets into correct chronological and syntactic order.'
           };
         }
@@ -1072,6 +1234,7 @@
           blankCount: 0,
           inputElements: [],
           tokens: reorderTokens,
+          images,
           extraText
         };
       }
@@ -1088,6 +1251,7 @@
         inputElements: [],
         choices: [],
         tokens: [],
+        images,
         extraText: ''
       };
     }

@@ -23,6 +23,8 @@
  * Built for Tampermonkey, Violentmonkey, and Greasemonkey.
  */
 
+/* eslint-disable */
+
 
 (function() {
   'use strict';
@@ -193,11 +195,18 @@ YOU MUST EXECUTE A DEEP 4-PASS VERIFICATION BEFORE GENERATING THE JSON RESPONSE:
    - Python: Indentation semantics, 0-indexed slicing (start:end exclusive), integer division '//' vs float '/', 'def', 'self', 'return'.
    - JavaScript / TypeScript: 'let', 'const', arrow functions, strict equality '===', template literals.
    - C++: 'std::cout', 'std::cin', stream operators '<<' / '>>', pointers '*', references '&', semicolons.
-    - SQL:
-      * Clause order: 'SELECT [columns] FROM [table] WHERE [condition] GROUP BY [cols] HAVING [cond] ORDER BY [cols]'.
-      * Multi-column selection: multiple columns in the SELECT clause MUST be separated by commas (e.g. 'SELECT [BLANK_1] , [BLANK_2] FROM table').
-      * Table source: the table name is specified in the FROM clause (e.g. '[BLANK_3] orders').
-      * Fixed Code Invariant: Words already visible in the code template (such as 'id' or 'orders') are ALREADY part of the query. Do NOT repeat existing code tokens in the 'answers' array!
+   - SQL:
+     * Clause order: 'SELECT [columns] FROM [table] WHERE [condition] GROUP BY [cols] HAVING [cond] ORDER BY [cols]'.
+     * Multi-column selection: multiple columns in the SELECT clause MUST be separated by commas (e.g. 'SELECT [BLANK_1] , [BLANK_2] FROM table').
+     * Table source: the table name is specified in the FROM clause (e.g. '[BLANK_3] orders').
+     * Fixed Code Invariant: Words already visible in the code template (such as 'id' or 'orders') are ALREADY part of the query. Do NOT repeat existing code tokens in the 'answers' array!
+     * Aggregates with GROUP BY: When evaluating 'SELECT AGG_FUNC(...) ... GROUP BY group_col', count the number of UNIQUE values in the group_col column in the dataset. If there are N unique groups, the query produces N result rows (one computed aggregate value per unique group).
+     * HAVING Clause Filtering: When evaluating 'HAVING AGG_FUNC(...) > value', group the rows by the GROUP BY column first, compute the aggregate for each group separately, and count ONLY the groups that strictly satisfy the HAVING condition. For example, if 3 groups exist (Sales MAX 4500, IT MAX 7500, HR MAX 7000) and HAVING is 'MAX(salary) > 5000', Sales is filtered out, leaving exactly 2 rows (IT and HR).
+    - Data Engineering & Data Quality Issues (Diagram & Table Inspection):
+      * Duplication: Repeated/identical records with identical primary keys or attribute rows (e.g. same ID, name, age). Map the 'duplication' slot to the marker/badge pointing to the duplicate rows.
+      * Missing Value: Blank, null, or empty cell in a required column (e.g. empty name field). Map the 'missing value' slot to the marker/badge pointing to the empty cell.
+      * Incorrect Data Type: A value whose type violates domain constraints (e.g. text 'twenty-five' in numeric age column, or corrupted date strings). Map the 'incorrect data type' slot to the marker/badge pointing to that row.
+      * Visual Badge Mapping: When matching categories to numbered diagram markers ('1', '2', '3'), carefully check what exact anomaly exists at marker 1, marker 2, and marker 3. Never guess sequential 1, 2, 3!
 2. Scope & Variable Tracking:
    - Identify all declared variables and types in the code (e.g. 'String name = "James";' or 'int a = 5; int b = 10;').
    - Ensure variables used in later expressions strictly match declared names and types.
@@ -422,6 +431,73 @@ YOU MUST EXECUTE A DEEP 4-PASS VERIFICATION BEFORE GENERATING THE JSON RESPONSE:
       status: 'mastered',
       reflection: "SQL LIKE pattern 'The%King_': % matches zero or more characters (e.g. ' Warrior '), and _ matches exactly one single character ('1' or '2'). '3B' has 2 characters, and 'The Silent King' has 0 characters after King.",
       source: 'historical_seed'
+    },
+    {
+      title: 'Match the data with its source type',
+      code: 'tweet dates: [BLANK_1]\nheart rate: [BLANK_2]\npayment amounts: [BLANK_3]',
+      language: 'Data Concepts',
+      type: 'fill_blanks',
+      blankCount: 3,
+      answers: ['social data', 'device data', 'transactional data'],
+      options: ['social data', 'device data', 'transactional data'],
+      status: 'mastered',
+      reflection: 'Tweet dates are social data, heart rate measurements are device (IoT/sensor) data, and payment amounts are transactional data.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'Select all of the methods you could use to collect data',
+      language: 'Data Concepts',
+      type: 'multi_choice',
+      answers: ['Querying a database', 'Connecting to servers with APIs', 'Scraping web pages'],
+      options: ['Querying a database', 'Connecting to servers with APIs', 'Scraping web pages'],
+      status: 'mastered',
+      reflection: 'All three methods (querying databases, API integration, and web scraping) are standard techniques for collecting data.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'This query will generate a results table with...',
+      language: 'SQL',
+      type: 'single_choice',
+      answers: ['2 categories and 2 numerical values'],
+      options: ['2 categories and 2 numerical values', '3 categories and 3 numerical values', '1 category and 2 numerical values'],
+      status: 'mastered',
+      reflection: 'The products table contains 2 distinct categories (Fruit and Vegetable). GROUP BY category produces 2 grouped rows, each computing an AVG(price) numerical value, resulting in 2 categories and 2 numerical values.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'Complete to extract the maximum price for each type of product sold in New York',
+      code: 'SELECT product, [BLANK_1] (price)\nFROM sales\n[BLANK_2] city [BLANK_3] \'New York\'\n[BLANK_4] product;',
+      language: 'SQL',
+      type: 'fill_blanks',
+      blankCount: 4,
+      answers: ['MAX', 'WHERE', '=', 'GROUP BY'],
+      options: ['MAX', 'WHERE', '=', 'GROUP BY', 'AVG', 'HAVING'],
+      status: 'mastered',
+      reflection: 'The query calculates the maximum price per product in New York. Slot 1 is MAX(price), Slot 2 is WHERE, Slot 3 is \'=\' to filter city = \'New York\', and Slot 4 is GROUP BY to group by product.',
+      source: 'historical_seed'
+    },
+    {
+      title: 'This query will result in a table with...',
+      code: 'SELECT department,\n       MAX(salary)\nFROM employees\nGROUP BY department\nHAVING MAX(salary) > 5000;\n\nemployees:\nid | name | department | salary\n1 | Alice | Sales | 4500\n2 | Bob | IT | 5000\n3 | Frank | HR | 6000\n4 | Eva | IT | 7500\n5 | John | HR | 7000',
+      language: 'SQL',
+      type: 'single_choice',
+      answers: ['2 rows'],
+      options: ['3 rows', '2 rows', '5 rows'],
+      status: 'mastered',
+      reflection: 'The employees table has 3 departments: Sales (MAX 4500), IT (MAX 7500), HR (MAX 7000). The HAVING MAX(salary) > 5000 condition filters out Sales (4500 <= 5000), leaving exactly 2 rows (IT and HR).',
+      source: 'historical_seed'
+    },
+    {
+      title: 'Identify the data quality issues',
+      code: 'patients\npatient_id | name | age | appointment\n1 | 14651 | Emily Lee | twenty-five | 11-01-23\n2 | 25478 | [empty] | 40 | 10-05-23\n3 | 59941 | Mervin Rosenberg | 55 | 04-06-23\n3 | 59941 | Mervin Rosenberg | 55 | 04-06-23\n\nduplication: [BLANK_1]\nmissing value: [BLANK_2]\nincorrect data type: [BLANK_3]',
+      language: 'SQL',
+      type: 'fill_blanks',
+      blankCount: 3,
+      answers: ['3', '2', '1'],
+      options: ['1', '2', '3'],
+      status: 'mastered',
+      reflection: 'Row 1 (Badge 1) has string "twenty-five" in numeric age column (incorrect data type = 1). Row 2 (Badge 2) has an empty name field (missing value = 2). Rows 3 and 4 (Badge 3) are duplicate records with identical patient_id 59941, Mervin Rosenberg, 55 (duplication = 3). Therefore: duplication = 3, missing value = 2, incorrect data type = 1.',
+      source: 'historical_seed'
     }
   ];
 
@@ -593,6 +669,33 @@ YOU MUST EXECUTE A DEEP 4-PASS VERIFICATION BEFORE GENERATING THE JSON RESPONSE:
     }
 
     /**
+     * Validates that the memory candidate has compatible options/answers with the query.
+     */
+    validateOptionMatch(question, item) {
+      if (!question || !item) return false;
+
+      const qOpts = (question.options || (question.choices ? question.choices.map(c => c.text || c) : []))
+        .map(o => this.normalize(o))
+        .filter(Boolean);
+
+      const itemOpts = (item.options || []).map(o => this.normalize(o)).filter(Boolean);
+      const itemAns = (item.answers || []).map(a => this.normalize(a)).filter(Boolean);
+
+      // If both query and memory record have options/answers, verify at least one option overlaps
+      if (qOpts.length > 0 && (itemOpts.length > 0 || itemAns.length > 0)) {
+        const hasOverlap = qOpts.some(q => 
+          itemOpts.includes(q) || 
+          itemAns.includes(q) || 
+          itemOpts.some(io => io.includes(q) || q.includes(io)) ||
+          itemAns.some(ia => ia.includes(q) || q.includes(ia))
+        );
+        if (!hasOverlap) return false;
+      }
+
+      return true;
+    }
+
+    /**
      * Retrieves memory for a question if known.
      */
     get(question) {
@@ -601,20 +704,29 @@ YOU MUST EXECUTE A DEEP 4-PASS VERIFICATION BEFORE GENERATING THE JSON RESPONSE:
 
       for (const sig of signatures) {
         if (this.memories.has(sig)) {
-          return this.memories.get(sig);
+          const item = this.memories.get(sig);
+          if (this.validateOptionMatch(question, item)) {
+            return item;
+          }
         }
       }
 
       // Fuzzy scan over question title and code if direct signature missed
       const titleNorm = this.normalize(question.title || '');
       if (titleNorm && titleNorm.length > 10) {
+        const qCodeNorm = this.normalize(question.code || '');
         for (const item of this.memories.values()) {
           const itemTitleNorm = this.normalize(item.title || '');
           if (itemTitleNorm === titleNorm) {
-            const itemCode = this.normalize((item.code || '').slice(0, 50));
-            const qCode = this.normalize((question.code || '').slice(0, 50));
-            if (!itemCode || !qCode || itemCode === qCode) {
-              return item;
+            const itemCodeNorm = this.normalize(item.code || '');
+            const codeMatches = !itemCodeNorm || !qCodeNorm ||
+                                itemCodeNorm.slice(0, 40) === qCodeNorm.slice(0, 40) ||
+                                itemCodeNorm.includes(qCodeNorm.slice(0, 30)) ||
+                                qCodeNorm.includes(itemCodeNorm.slice(0, 30));
+            if (codeMatches) {
+              if (this.validateOptionMatch(question, item)) {
+                return item;
+              }
             }
           }
         }
@@ -1367,6 +1479,22 @@ Return strictly valid JSON matching this schema:
   "explanation": "..."
 }`;
 
+      const parts = [{ text: userPrompt }];
+
+      // Multimodal Vision support: If diagrams, charts, or images are captured in question payload, attach to Gemini
+      if (Array.isArray(questionPayload.images) && questionPayload.images.length > 0) {
+        for (const img of questionPayload.images) {
+          if (img && img.base64) {
+            parts.push({
+              inline_data: {
+                mime_type: img.mimeType || 'image/png',
+                data: img.base64
+              }
+            });
+          }
+        }
+      }
+
       const requestBody = {
         systemInstruction: {
           parts: [{ text: Config.PROMPT_TEMPLATE.SYSTEM }]
@@ -1374,7 +1502,7 @@ Return strictly valid JSON matching this schema:
         contents: [
           {
             role: 'user',
-            parts: [{ text: userPrompt }]
+            parts: parts
           }
         ],
         generationConfig: {
@@ -1830,13 +1958,16 @@ Return strictly valid JSON matching this schema:
       return `${ty}_${bc}_${t}_${c}_${opts}`;
     }
 
-    normalizeSignature(answers) {
+    normalizeSignature(answers, questionType = '') {
       if (!answers) return '';
       const arr = Array.isArray(answers) ? answers : [answers];
-      return arr
-        .map(a => String(a).toLowerCase().trim().replace(/[\r\n\t]/g, ' ').replace(/['"`]/g, ''))
-        .sort()
-        .join('|||');
+      const cleaned = arr.map(a => String(a).toLowerCase().trim().replace(/[\r\n\t]/g, ' ').replace(/['"`]/g, ''));
+      // Only sort for multi_choice (where checkbox selection order does not matter).
+      // For fill_blanks, reorder, and slot tasks, DO NOT sort! Sequential slot order is critical!
+      if (questionType === 'multi_choice') {
+        return cleaned.slice().sort().join('|||');
+      }
+      return cleaned.join('|||');
     }
 
     /**
@@ -2047,7 +2178,7 @@ Return strictly valid JSON matching this schema:
 
       const groupMap = new Map();
       for (const item of successfulResults) {
-        const sig = this.normalizeSignature(item.data.answers || item.data.answer);
+        const sig = this.normalizeSignature(item.data.answers || item.data.answer, questionPayload ? questionPayload.type : '');
         if (!groupMap.has(sig)) {
           groupMap.set(sig, {
             votes: 0,
@@ -2203,6 +2334,97 @@ Return strictly valid JSON matching this schema:
     } catch (e) {
       return (el.innerText || el.textContent || '').trim();
     }
+  }
+
+  function isDividerOrSpacer(el) {
+    if (!el) return false;
+
+    // Tag and ARIA checks
+    const tag = (el.tagName || '').toUpperCase();
+    if (tag === 'HR') return true;
+    if (el.getAttribute && el.getAttribute('role') === 'separator') return true;
+
+    // Class name and attribute keyword checks
+    const className = (typeof el.className === 'string' ? el.className : (el.getAttribute && el.getAttribute('class')) || '').toLowerCase();
+    const dataTest = (el.getAttribute && el.getAttribute('data-test') || '').toLowerCase();
+    const testId = (el.getAttribute && el.getAttribute('data-testid') || '').toLowerCase();
+    const id = (el.id || '').toLowerCase();
+    const combined = `${className} ${dataTest} ${testId} ${id}`;
+
+    if (
+      combined.includes('divider') ||
+      combined.includes('separator') ||
+      combined.includes('spacer') ||
+      combined.includes('drop-line') ||
+      combined.includes('dropline') ||
+      combined.includes('gap-line') ||
+      combined.includes('reorder-line') ||
+      combined.includes('reorder-gap') ||
+      combined.includes('insert-indicator') ||
+      combined.includes('placeholder-line') ||
+      combined.includes('between-rows') ||
+      combined.includes('line-between') ||
+      combined.includes('drop-indicator') ||
+      combined.includes('insertion-indicator')
+    ) {
+      return true;
+    }
+
+    // Geometry / layout detection: Check if it's an ultra-thin horizontal divider line or zero-height gap
+    try {
+      if (typeof el.getBoundingClientRect === 'function') {
+        const rect = el.getBoundingClientRect();
+        if (rect && rect.height > 0 && rect.height <= 8 && rect.width >= 20) {
+          return true;
+        }
+      }
+      if (el.offsetHeight > 0 && el.offsetHeight <= 8 && el.offsetWidth >= 20) {
+        return true;
+      }
+      if (el.clientHeight > 0 && el.clientHeight <= 8 && el.clientWidth >= 20) {
+        return true;
+      }
+    } catch (_) {}
+
+    // Inline style height check
+    if (el.style) {
+      const h = el.style.height || '';
+      if (h && (h === '0px' || h === '1px' || h === '2px' || h === '3px' || h === '4px' || h === '5px' || h === '6px' || h === '8px')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function isGenericInstruction(raw) {
+    if (!raw) return true;
+    const lower = raw.toLowerCase().trim().replace(/[.:!]+$/, '');
+    return (
+      lower === 'select all correct answers' ||
+      lower === 'select all answers that apply' ||
+      lower === 'select all that apply' ||
+      lower === 'select all options that apply' ||
+      lower === 'select all matching answers' ||
+      lower === 'select all correct' ||
+      lower === 'select the correct answer' ||
+      lower === 'select the correct answers' ||
+      lower === 'select the correct option' ||
+      lower === 'select the correct options' ||
+      lower === 'select all' ||
+      lower === 'choose all that apply' ||
+      lower === 'choose all correct answers' ||
+      lower === 'choose all matching answers' ||
+      lower === 'choose the correct answer' ||
+      lower === 'choose the correct answers' ||
+      lower === 'choose the correct option' ||
+      lower === 'check all that apply' ||
+      lower === 'check all correct answers' ||
+      lower === 'pick the correct answer' ||
+      lower === 'pick all that apply' ||
+      lower === 'fill in the blank' ||
+      lower === 'fill in the blanks'
+    );
   }
 
   const BLANK_SELECTOR = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="hidden"]), textarea, [contenteditable="true"], span[class*="slot" i], div[class*="slot" i], span[class*="blank" i], div[class*="blank" i], span[class*="circle" i], div[class*="circle" i], div[class*="drop" i], span[class*="drop" i], div[class*="droppable" i], span[class*="droppable" i], div[class*="empty" i], span[class*="empty" i], div[class*="gap" i], span[class*="gap" i], div[class*="hole" i], span[class*="hole" i], [data-test*="blank"], [data-test*="slot"], [data-test*="empty"], [data-test*="drop"], [data-test*="droppable"], [data-test*="hole"], [data-test*="target"]';
@@ -2629,7 +2851,7 @@ Return strictly valid JSON matching this schema:
           if (!isVisible(el)) continue;
           if (el.closest('header') || el.closest('nav') || el.closest('#sololearn-ai-hud')) continue;
           const cleaned = cleanTitleText(getCleanText(el));
-          if (cleaned.length > 5 && !cleaned.toLowerCase().includes('sololearn is a platform')) {
+          if (cleaned.length > 5 && !cleaned.toLowerCase().includes('sololearn is a platform') && !isGenericInstruction(cleaned)) {
             return cleaned;
           }
         }
@@ -2645,6 +2867,7 @@ Return strictly valid JSON matching this schema:
         const cleaned = cleanTitleText(raw);
         if (cleaned.length < 5 || cleaned.length > 350) continue;
         if (cleaned.toLowerCase().includes('sololearn is a platform')) continue;
+        if (isGenericInstruction(cleaned)) continue;
 
         const lower = cleaned.toLowerCase();
 
@@ -2677,7 +2900,7 @@ Return strictly valid JSON matching this schema:
         if (!isVisible(p)) continue;
         if (p.closest('header') || p.closest('nav') || p.closest('button') || p.closest('#sololearn-ai-hud')) continue;
         const cleaned = cleanTitleText(getCleanText(p));
-        if (cleaned.length >= 8 && cleaned.length <= 250 && !cleaned.toLowerCase().includes('sololearn is a platform')) {
+        if (cleaned.length >= 8 && cleaned.length <= 250 && !cleaned.toLowerCase().includes('sololearn is a platform') && !isGenericInstruction(cleaned)) {
           return cleaned;
         }
       }
@@ -2691,6 +2914,32 @@ Return strictly valid JSON matching this schema:
         const clone = el.cloneNode(true);
         clone.querySelectorAll('#sololearn-ai-hud, .sl-ai-badge, .sl-ai-order-badge').forEach(b => b.remove());
         clone.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
+        
+        // Table cell support: ensure pipe separators and mark visually empty cells as [empty]
+        clone.querySelectorAll('th, td').forEach(cell => {
+          const text = (cell.textContent || '').replace(/[\s\u00A0\u200B]+/g, ' ').trim();
+          if (!text) {
+            cell.appendChild(document.createTextNode('[empty]'));
+          }
+          cell.appendChild(document.createTextNode(' | '));
+        });
+
+        // SVG Text Support: ensure text in SVG graphics and illustrations has proper spacing and line breaks
+        clone.querySelectorAll('text, tspan').forEach(t => {
+          t.appendChild(document.createTextNode(' '));
+        });
+        clone.querySelectorAll('g').forEach(g => {
+          g.appendChild(document.createTextNode('\n'));
+        });
+
+        // Image Alt text support: ensure images with alt / title attributes are extracted as text
+        clone.querySelectorAll('img').forEach(img => {
+          const alt = img.getAttribute('alt') || img.getAttribute('aria-label') || img.getAttribute('title') || '';
+          if (alt) {
+            img.replaceWith(document.createTextNode(` [Image: ${alt}] `));
+          }
+        });
+
         const blocks = clone.querySelectorAll('div, p, tr, li, pre');
         blocks.forEach(b => {
           b.appendChild(document.createTextNode('\n'));
@@ -2706,20 +2955,51 @@ Return strictly valid JSON matching this schema:
       }
     }
 
+    static extractImages(container = document) {
+      const searchRoot = container || document.body;
+      const images = [];
+      try {
+        const imgElements = Array.from(searchRoot.querySelectorAll('img, canvas'));
+        for (const img of imgElements) {
+          if (!isVisible(img) || img.closest('#sololearn-ai-hud')) continue;
+          if (img.tagName.toLowerCase() === 'img') {
+            const src = img.src || img.getAttribute('src') || '';
+            if (src.startsWith('data:image/')) {
+              const match = src.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+              if (match) {
+                images.push({ mimeType: match[1], base64: match[2] });
+              }
+            } else if (src.length > 0) {
+              images.push({ url: src, alt: img.alt || img.getAttribute('aria-label') || '' });
+            }
+          } else if (img.tagName.toLowerCase() === 'canvas') {
+            try {
+              const dataUrl = img.toDataURL('image/png');
+              const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+              if (match) {
+                images.push({ mimeType: match[1], base64: match[2] });
+              }
+            } catch (_) {}
+          }
+        }
+      } catch (_) {}
+      return images;
+    }
+
     static extractCodeAndBlanks(container = document) {
       const searchRoot = container || document.body;
       const candidateBoxes = Array.from(searchRoot.querySelectorAll(
-        'pre, code, div[class*="code" i], div[class*="Code"], div[style*="monospace"], div[class*="editor" i], div[class*="snippet" i], div[class*="syntax" i], div[class*="highlight" i], div[class*="fitb" i], [data-test*="code"], [data-test*="snippet"], [data-test*="fitb"]'
+        'pre, code, table, svg, canvas, img, div[class*="code" i], div[class*="Code"], div[style*="monospace"], div[class*="editor" i], div[class*="snippet" i], div[class*="syntax" i], div[class*="highlight" i], div[class*="fitb" i], div[class*="table" i], div[class*="diagram" i], div[class*="illustration" i], div[class*="graphic" i], div[class*="image" i], div[class*="canvas" i], [data-test*="code"], [data-test*="snippet"], [data-test*="fitb"], [data-test*="table"], [data-test*="diagram"], [data-test*="illustration"], [data-test*="graphic"], [data-test*="image"]'
       ));
 
-      // Fallback: Scan all div/section elements if candidateBoxes is empty
+      // Fallback: Scan all div/section/svg/table elements if candidateBoxes is empty
       if (candidateBoxes.length === 0) {
-        const allDivs = Array.from((document.body || searchRoot).querySelectorAll('div, section, article, pre'));
+        const allDivs = Array.from((document.body || searchRoot).querySelectorAll('div, section, article, pre, table, svg'));
         for (const div of allDivs) {
           if (!isVisible(div) || div.closest('#sololearn-ai-hud') || div.closest('header') || div.closest('nav')) continue;
           const text = getCleanText(div);
           if (
-            (text.includes(';') || text.includes('{') || text.includes('System.out') || text.includes('Console.Write') || text.includes('def ') || text.includes('public ') || text.includes('class ') || text.includes('String ') || text.includes('int ') || text.includes('SELECT ') || text.includes('FROM ')) &&
+            (text.includes(';') || text.includes('{') || text.includes('System.out') || text.includes('Console.Write') || text.includes('def ') || text.includes('public ') || text.includes('class ') || text.includes('String ') || text.includes('int ') || text.includes('SELECT ') || text.includes('FROM ') || text.includes('GROUP BY') || text.includes('WHERE ') || text.includes('HAVING ')) &&
             text.length > 5 && text.length < 2500
           ) {
             candidateBoxes.push(div);
@@ -2749,10 +3029,11 @@ Return strictly valid JSON matching this schema:
         const box = codeBoxes[i];
         const rawInsideBlanks = Array.from(box.querySelectorAll(BLANK_SELECTOR));
 
-        // Filter out parent drop containers that contain child drop containers
+        // Filter out parent drop containers that contain child drop containers, and ignore divider lines / spacers
         let insideBlanks = rawInsideBlanks.filter(b => {
           if (!isVisible(b)) return false;
           if (b.closest('#sololearn-ai-hud')) return false;
+          if (isDividerOrSpacer(b)) return false;
           return !rawInsideBlanks.some(other => other !== b && b.contains(other));
         });
 
@@ -2760,6 +3041,7 @@ Return strictly valid JSON matching this schema:
         if (insideBlanks.length === 0) {
           const emptyLeaves = Array.from(box.querySelectorAll('span, div, button, em, i, a')).filter(el => {
             if (!isVisible(el) || el.closest('#sololearn-ai-hud')) return false;
+            if (isDividerOrSpacer(el)) return false;
             if (el.children.length > 0) return false;
             const t = el.textContent.replace(/[\s\u00A0\u200B]+/g, '');
             return t === '' || t === '...' || t === '___' || t === '?' || t === '•';
@@ -2825,6 +3107,7 @@ Return strictly valid JSON matching this schema:
           if (!isVisible(b)) return false;
           if (b.closest('#sololearn-ai-hud') || b.closest('header') || b.closest('nav')) return false;
           if (b.closest('.word-bank, [data-test*="word-bank"], [class*="wordBank" i]')) return false;
+          if (isDividerOrSpacer(b)) return false;
           return !rawAllBlanks.some(other => other !== b && isVisible(other) && b.contains(other));
         });
 
@@ -2952,6 +3235,7 @@ Return strictly valid JSON matching this schema:
         for (const item of items) {
           if (!isVisible(item) || seen.has(item)) continue;
           if (item.closest('#sololearn-ai-hud') || item.closest('header') || item.closest('nav')) continue;
+          if (isDividerOrSpacer(item)) continue;
           
           // Don't select elements that are or contain blank drop slots
           if (item.matches(BLANK_SELECTOR) || item.querySelector(BLANK_SELECTOR)) continue;
@@ -2974,6 +3258,7 @@ Return strictly valid JSON matching this schema:
         for (const el of allCandidates) {
           if (!isVisible(el) || seen.has(el)) continue;
           if (el.closest('header') || el.closest('nav') || el.closest('#sololearn-ai-hud')) continue;
+          if (isDividerOrSpacer(el)) continue;
           if (el.matches(BLANK_SELECTOR) || el.querySelector(BLANK_SELECTOR)) continue;
           if (el.children.length > 2) continue;
 
@@ -3056,6 +3341,7 @@ Return strictly valid JSON matching this schema:
           if (!isVisible(item) || seen.has(item)) continue;
           if (item.closest('#sololearn-ai-hud')) continue;
           if (item.closest('header') || item.closest('nav')) continue;
+          if (isDividerOrSpacer(item)) continue;
           if (item.matches(blankSelector) || item.querySelector(blankSelector)) continue;
           const text = getCleanText(item);
           if (isValidTokenText(text)) {
@@ -3154,13 +3440,18 @@ Return strictly valid JSON matching this schema:
         titleLower.includes('match the concept') ||
         titleLower.includes('match the description') ||
         titleLower.includes('match the term') ||
+        titleLower.includes('match the data') ||
+        titleLower.includes('match the') ||
+        titleLower.startsWith('match') ||
         titleLower.includes('pair the') ||
-        titleLower.includes('pair each')
+        titleLower.includes('pair each') ||
+        titleLower.startsWith('pair')
       );
 
       const { code, blankElements } = this.extractCodeAndBlanks(container);
       const choices = this.getChoiceOptions(container, title);
       const reorderTokens = this.getReorderTokens(container);
+      const images = this.extractImages(container);
 
       // Count blanks detected in code string
       const blanksInCodeMatches = (code.match(/\[BLANK_\d+\]/g) || []).length;
@@ -3189,6 +3480,7 @@ Return strictly valid JSON matching this schema:
           tokens: wordBankItems,
           options: wordBankItems.map(t => t.text),
           choices: wordBankItems,
+          images,
           extraText: `Instruction: Fill in all ${finalBlankCount} missing blank slots in order.`
         };
       }
@@ -3208,6 +3500,7 @@ Return strictly valid JSON matching this schema:
             blankCount: items.length,
             inputElements: [],
             choices: items,
+            images,
             extraText: 'Instruction: Rearrange the given code snippets into correct chronological and syntactic order.'
           };
         }
@@ -3231,6 +3524,7 @@ Return strictly valid JSON matching this schema:
           blankCount: 0,
           inputElements: [],
           tokens: reorderTokens,
+          images,
           extraText
         };
       }
@@ -3247,6 +3541,7 @@ Return strictly valid JSON matching this schema:
         inputElements: [],
         choices: [],
         tokens: [],
+        images,
         extraText: ''
       };
     }

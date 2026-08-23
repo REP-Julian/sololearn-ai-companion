@@ -157,11 +157,18 @@ YOU MUST EXECUTE A DEEP 4-PASS VERIFICATION BEFORE GENERATING THE JSON RESPONSE:
    - Python: Indentation semantics, 0-indexed slicing (start:end exclusive), integer division '//' vs float '/', 'def', 'self', 'return'.
    - JavaScript / TypeScript: 'let', 'const', arrow functions, strict equality '===', template literals.
    - C++: 'std::cout', 'std::cin', stream operators '<<' / '>>', pointers '*', references '&', semicolons.
-    - SQL:
-      * Clause order: 'SELECT [columns] FROM [table] WHERE [condition] GROUP BY [cols] HAVING [cond] ORDER BY [cols]'.
-      * Multi-column selection: multiple columns in the SELECT clause MUST be separated by commas (e.g. 'SELECT [BLANK_1] , [BLANK_2] FROM table').
-      * Table source: the table name is specified in the FROM clause (e.g. '[BLANK_3] orders').
-      * Fixed Code Invariant: Words already visible in the code template (such as 'id' or 'orders') are ALREADY part of the query. Do NOT repeat existing code tokens in the 'answers' array!
+   - SQL:
+     * Clause order: 'SELECT [columns] FROM [table] WHERE [condition] GROUP BY [cols] HAVING [cond] ORDER BY [cols]'.
+     * Multi-column selection: multiple columns in the SELECT clause MUST be separated by commas (e.g. 'SELECT [BLANK_1] , [BLANK_2] FROM table').
+     * Table source: the table name is specified in the FROM clause (e.g. '[BLANK_3] orders').
+     * Fixed Code Invariant: Words already visible in the code template (such as 'id' or 'orders') are ALREADY part of the query. Do NOT repeat existing code tokens in the 'answers' array!
+     * Aggregates with GROUP BY: When evaluating 'SELECT AGG_FUNC(...) ... GROUP BY group_col', count the number of UNIQUE values in the group_col column in the dataset. If there are N unique groups, the query produces N result rows (one computed aggregate value per unique group).
+     * HAVING Clause Filtering: When evaluating 'HAVING AGG_FUNC(...) > value', group the rows by the GROUP BY column first, compute the aggregate for each group separately, and count ONLY the groups that strictly satisfy the HAVING condition. For example, if 3 groups exist (Sales MAX 4500, IT MAX 7500, HR MAX 7000) and HAVING is 'MAX(salary) > 5000', Sales is filtered out, leaving exactly 2 rows (IT and HR).
+    - Data Engineering & Data Quality Issues (Diagram & Table Inspection):
+      * Duplication: Repeated/identical records with identical primary keys or attribute rows (e.g. same ID, name, age). Map the 'duplication' slot to the marker/badge pointing to the duplicate rows.
+      * Missing Value: Blank, null, or empty cell in a required column (e.g. empty name field). Map the 'missing value' slot to the marker/badge pointing to the empty cell.
+      * Incorrect Data Type: A value whose type violates domain constraints (e.g. text 'twenty-five' in numeric age column, or corrupted date strings). Map the 'incorrect data type' slot to the marker/badge pointing to that row.
+      * Visual Badge Mapping: When matching categories to numbered diagram markers ('1', '2', '3'), carefully check what exact anomaly exists at marker 1, marker 2, and marker 3. Never guess sequential 1, 2, 3!
 2. Scope & Variable Tracking:
    - Identify all declared variables and types in the code (e.g. 'String name = "James";' or 'int a = 5; int b = 10;').
    - Ensure variables used in later expressions strictly match declared names and types.

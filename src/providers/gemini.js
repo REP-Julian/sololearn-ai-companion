@@ -159,6 +159,22 @@ Return strictly valid JSON matching this schema:
   "explanation": "..."
 }`;
 
+      const parts = [{ text: userPrompt }];
+
+      // Multimodal Vision support: If diagrams, charts, or images are captured in question payload, attach to Gemini
+      if (Array.isArray(questionPayload.images) && questionPayload.images.length > 0) {
+        for (const img of questionPayload.images) {
+          if (img && img.base64) {
+            parts.push({
+              inline_data: {
+                mime_type: img.mimeType || 'image/png',
+                data: img.base64
+              }
+            });
+          }
+        }
+      }
+
       const requestBody = {
         systemInstruction: {
           parts: [{ text: Config.PROMPT_TEMPLATE.SYSTEM }]
@@ -166,7 +182,7 @@ Return strictly valid JSON matching this schema:
         contents: [
           {
             role: 'user',
-            parts: [{ text: userPrompt }]
+            parts: parts
           }
         ],
         generationConfig: {

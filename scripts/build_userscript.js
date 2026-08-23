@@ -32,6 +32,8 @@ const header = `// ==UserScript==
  * SoloLearn AI Automation Solver - Standalone Userscript
  * Built for Tampermonkey, Violentmonkey, and Greasemonkey.
  */
+
+/* eslint-disable */
 `;
 
 const cssContent = fs.readFileSync(path.join(srcDir, 'styles.css'), 'utf8');
