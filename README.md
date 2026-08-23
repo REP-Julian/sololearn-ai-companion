@@ -16,12 +16,6 @@ Powered by **Mistral Codestral**, **Google Gemini 3.7 Flash**, and **Qwen 2.5 Co
 
 ---
 
-## 👨‍💻 Created By
-
-**Julian Agustino** ([@REP-Julian](https://github.com/REP-Julian)) • [Repository](https://github.com/REP-Julian/sololearn-ai-companion)
-
----
-
 ## ⚖️ Pros & Cons
 
 ### 🟢 Pros
